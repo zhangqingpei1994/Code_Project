@@ -1,0 +1,7 @@
+/home/zhang/code_project/Fusion/ElasticFusion-master/GUI/build-src-Desktop_Qt_5_6_1_GCC_64bit-Debug/CMakeFiles/install.dir
+/home/zhang/code_project/Fusion/ElasticFusion-master/GUI/build-src-Desktop_Qt_5_6_1_GCC_64bit-Debug/CMakeFiles/list_install_components.dir
+/home/zhang/code_project/Fusion/ElasticFusion-master/GUI/build-src-Desktop_Qt_5_6_1_GCC_64bit-Debug/CMakeFiles/rebuild_cache.dir
+/home/zhang/code_project/Fusion/ElasticFusion-master/GUI/build-src-Desktop_Qt_5_6_1_GCC_64bit-Debug/CMakeFiles/install/local.dir
+/home/zhang/code_project/Fusion/ElasticFusion-master/GUI/build-src-Desktop_Qt_5_6_1_GCC_64bit-Debug/CMakeFiles/install/strip.dir
+/home/zhang/code_project/Fusion/ElasticFusion-master/GUI/build-src-Desktop_Qt_5_6_1_GCC_64bit-Debug/CMakeFiles/ElasticFusion.dir
+/home/zhang/code_project/Fusion/ElasticFusion-master/GUI/build-src-Desktop_Qt_5_6_1_GCC_64bit-Debug/CMakeFiles/edit_cache.dir
