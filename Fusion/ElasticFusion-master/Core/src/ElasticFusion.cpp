@@ -164,7 +164,7 @@ void ElasticFusion::createTextures()
                                                GL_RGB,
                                                GL_UNSIGNED_BYTE,
                                                true,
-                                               true);
+                                               true);   //cuda
 
     textures[GPUTexture::DEPTH_RAW] = new GPUTexture(Resolution::getInstance().width(),
                                                      Resolution::getInstance().height(),

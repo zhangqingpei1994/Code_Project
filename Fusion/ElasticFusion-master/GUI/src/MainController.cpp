@@ -197,8 +197,8 @@ void MainController::launch()
             }
 
             logReader->rewind();
-            eFusion = new ElasticFusion(openLoop ? std::numeric_limits<int>::max() / 2 : timeDelta,
-                                        icpCountThresh,
+            eFusion = new ElasticFusion(openLoop ? std::numeric_limits<int>::max() / 2 : timeDelta,    //false,timeDelta=200
+                                        icpCountThresh,      //40000
                                         icpErrThresh,
                                         covThresh,
                                         !openLoop,
@@ -213,6 +213,8 @@ void MainController::launch()
                                         so3,
                                         frameToFrameRGB, //Do frame-to-frame RGB tracking.
                                         logReader->getFile());
+            //cout<<"icpCountThresh="<<icpCountThresh<<endl;
+
         }
         else
         {
