@@ -1,0 +1,3 @@
+/home/zhang/catkin_ws/src/kinect2_test/kinect2_depth_libfreenect2/build/CMakeFiles/edit_cache.dir
+/home/zhang/catkin_ws/src/kinect2_test/kinect2_depth_libfreenect2/build/CMakeFiles/rebuild_cache.dir
+/home/zhang/catkin_ws/src/kinect2_test/kinect2_depth_libfreenect2/build/CMakeFiles/test.dir

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+   <FileVersion major="1" minor="6" />
+   <Project>
+      <Option title="undistorted_image" />
+      <Option makefile_is_custom="1" />
+      <Option compiler="gcc" />
+      <Option virtualFolders="CMake Files\;CMake Files\..\;CMake Files\..\..\;CMake Files\..\..\..\;CMake Files\..\..\..\..\;CMake Files\..\..\..\..\..\;CMake Files\..\..\..\..\..\..\;CMake Files\..\..\..\..\..\..\..\;CMake Files\..\..\..\..\..\..\..\usr\;CMake Files\..\..\..\..\..\..\..\usr\local\;CMake Files\..\..\..\..\..\..\..\usr\local\lib\;CMake Files\..\..\..\..\..\..\..\usr\local\lib\cmake\;CMake Files\..\..\..\..\..\..\..\usr\local\lib\cmake\freenect2\;CMake Files\..\..\..\..\..\..\..\usr\lib\;CMake Files\..\..\..\..\..\..\..\usr\lib\cmake\;CMake Files\..\..\..\..\..\..\..\usr\lib\cmake\eigen3\;CMake Files\..\..\..\..\..\..\..\opt\;CMake Files\..\..\..\..\..\..\..\opt\ros\;CMake Files\..\..\..\..\..\..\..\opt\ros\kinetic\;CMake Files\..\..\..\..\..\..\..\opt\ros\kinetic\share\;CMake Files\..\..\..\..\..\..\..\opt\ros\kinetic\share\OpenCV-3.3.1\;" />
+      <Build>
+      <Target title="all">
+         <Option working_dir="/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build" />
+         <Option type="4" />
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 all" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="edit_cache">
+         <Option working_dir="/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build" />
+         <Option type="4" />
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 edit_cache" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="rebuild_cache">
+         <Option working_dir="/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build" />
+         <Option type="4" />
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 rebuild_cache" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="test">
+         <Option output="/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/test" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build" />
+         <Option object_output="./" />
+         <Option type="1" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/opt/ros/kinetic/include/opencv-3.3.1" />
+            <Add directory="/opt/ros/kinetic/include/opencv-3.3.1/opencv" />
+            <Add directory="/usr/include" />
+            <Add directory="/usr/include/c++/5" />
+            <Add directory="/usr/include/c++/5/backward" />
+            <Add directory="/usr/include/libusb-1.0" />
+            <Add directory="/usr/include/x86_64-linux-gnu" />
+            <Add directory="/usr/include/x86_64-linux-gnu/c++/5" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed" />
+            <Add directory="/usr/local/include" />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 test" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="test/fast">
+         <Option output="/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/test" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build" />
+         <Option object_output="./" />
+         <Option type="1" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/opt/ros/kinetic/include/opencv-3.3.1" />
+            <Add directory="/opt/ros/kinetic/include/opencv-3.3.1/opencv" />
+            <Add directory="/usr/include" />
+            <Add directory="/usr/include/c++/5" />
+            <Add directory="/usr/include/c++/5/backward" />
+            <Add directory="/usr/include/libusb-1.0" />
+            <Add directory="/usr/include/x86_64-linux-gnu" />
+            <Add directory="/usr/include/x86_64-linux-gnu/c++/5" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include" />
+            <Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed" />
+            <Add directory="/usr/local/include" />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 test/fast" />
+            <CompileFile command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 &quot;$file&quot;" />
+            <Clean command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 clean" />
+            <DistClean command="/usr/bin/make -f &quot;/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/Makefile&quot;  VERBOSE=1 clean" />
+         </MakeCommands>
+      </Target>
+      </Build>
+      <Unit filename="/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted/src/test.cpp">
+         <Option target="test"/>
+      </Unit>
+      <Unit filename="/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted/CMakeLists.txt">
+          <Option virtualFolder="CMake Files\" />
+      </Unit>
+      <Unit filename="/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted/../../../../../../../usr/local/lib/cmake/freenect2/freenect2ConfigVersion.cmake">
+          <Option virtualFolder="CMake Files\..\..\..\..\..\..\..\usr\local\lib\cmake\freenect2\" />
+      </Unit>
+      <Unit filename="/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted/../../../../../../../usr/local/lib/cmake/freenect2/freenect2Config.cmake">
+          <Option virtualFolder="CMake Files\..\..\..\..\..\..\..\usr\local\lib\cmake\freenect2\" />
+      </Unit>
+      <Unit filename="/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted/../../../../../../../usr/lib/cmake/eigen3/Eigen3Config.cmake">
+          <Option virtualFolder="CMake Files\..\..\..\..\..\..\..\usr\lib\cmake\eigen3\" />
+      </Unit>
+      <Unit filename="/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted/../../../../../../../opt/ros/kinetic/share/OpenCV-3.3.1/OpenCVConfig-version.cmake">
+          <Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\kinetic\share\OpenCV-3.3.1\" />
+      </Unit>
+      <Unit filename="/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted/../../../../../../../opt/ros/kinetic/share/OpenCV-3.3.1/OpenCVConfig.cmake">
+          <Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\kinetic\share\OpenCV-3.3.1\" />
+      </Unit>
+      <Unit filename="/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted/../../../../../../../opt/ros/kinetic/share/OpenCV-3.3.1/OpenCVModules.cmake">
+          <Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\kinetic\share\OpenCV-3.3.1\" />
+      </Unit>
+      <Unit filename="/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted/../../../../../../../opt/ros/kinetic/share/OpenCV-3.3.1/OpenCVModules-none.cmake">
+          <Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\kinetic\share\OpenCV-3.3.1\" />
+      </Unit>
+   </Project>
+</CodeBlocks_project_file>

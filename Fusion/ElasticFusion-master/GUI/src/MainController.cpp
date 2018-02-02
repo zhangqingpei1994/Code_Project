@@ -25,7 +25,7 @@ MainController::MainController(int argc, char * argv[])
    gui(0),
    groundTruthOdometry(0),
    logReader(0),
-   framesToSkip(0),                     //个人理解是相机跳过的帧数
+   framesToSkip(0),                      //个人理解是相机跳过的帧数
    resetButton(false),
    resizeStream(0)
 {
@@ -91,8 +91,8 @@ MainController::MainController(int argc, char * argv[])
     so3 = !(Parse::get().arg(argc, argv, "-nso", empty) > -1);
     end = std::numeric_limits<unsigned short>::max(); //Funny bound, since we predict times in this format really! 65535
 
-    Parse::get().arg(argc, argv, "-c", confidence);  //获得参数的值
-    Parse::get().arg(argc, argv, "-d", depth);   // Cutoff distance for depth processing 深度处理的截至距离
+    Parse::get().arg(argc, argv, "-c", confidence);    //获得参数的值
+    Parse::get().arg(argc, argv, "-d", depth);         // Cutoff distance for depth processing 深度处理的截至距离
     Parse::get().arg(argc, argv, "-i", icp);
     Parse::get().arg(argc, argv, "-ie", icpErrThresh);
     Parse::get().arg(argc, argv, "-cv", covThresh);
@@ -213,8 +213,6 @@ void MainController::launch()
                                         so3,
                                         frameToFrameRGB, //Do frame-to-frame RGB tracking.
                                         logReader->getFile());
-            //cout<<"icpCountThresh="<<icpCountThresh<<endl;
-
         }
         else
         {

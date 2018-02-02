@@ -46,7 +46,7 @@ class Resize
 
         std::shared_ptr<Shader> imageProgram;
         pangolin::GlRenderBuffer imageRenderBuffer;
-        pangolin::GlFramebuffer imageFrameBuffer;
+        pangolin::GlFramebuffer imageFrameBuffer;  //frame buffer仅仅是管理者，不需要分配空间
 
         std::shared_ptr<Shader> vertexProgram;
         pangolin::GlRenderBuffer vertexRenderBuffer;

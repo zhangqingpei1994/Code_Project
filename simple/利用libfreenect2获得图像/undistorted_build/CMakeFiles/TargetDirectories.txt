@@ -1,0 +1,3 @@
+/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/CMakeFiles/edit_cache.dir
+/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/CMakeFiles/rebuild_cache.dir
+/home/zhang/github/Code_Project/simple/利用libfreenect2获得图像/undistorted_build/CMakeFiles/test.dir

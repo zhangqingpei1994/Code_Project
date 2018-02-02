@@ -1,0 +1,55 @@
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/zhang/github/Code_Project/head_position/build-head-pose-estimation-master-Desktop_Qt_5_6_1_GCC_64bit-Release/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_7f08d/fast"
+/usr/bin/make -f CMakeFiles/cmTC_7f08d.dir/build.make CMakeFiles/cmTC_7f08d.dir/build
+make[1]: Entering directory '/home/zhang/github/Code_Project/head_position/build-head-pose-estimation-master-Desktop_Qt_5_6_1_GCC_64bit-Release/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_7f08d.dir/CheckSymbolExists.c.o
+/usr/bin/cc    -fPIC    -o CMakeFiles/cmTC_7f08d.dir/CheckSymbolExists.c.o   -c /home/zhang/github/Code_Project/head_position/build-head-pose-estimation-master-Desktop_Qt_5_6_1_GCC_64bit-Release/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTC_7f08d
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_7f08d.dir/link.txt --verbose=1
+/usr/bin/cc  -fPIC     CMakeFiles/cmTC_7f08d.dir/CheckSymbolExists.c.o  -o cmTC_7f08d -rdynamic 
+CMakeFiles/cmTC_7f08d.dir/CheckSymbolExists.c.o：在函数‘main’中：
+CheckSymbolExists.c:(.text+0x1b)：对‘pthread_create’未定义的引用
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_7f08d.dir/build.make:97: recipe for target 'cmTC_7f08d' failed
+make[1]: *** [cmTC_7f08d] Error 1
+make[1]: Leaving directory '/home/zhang/github/Code_Project/head_position/build-head-pose-estimation-master-Desktop_Qt_5_6_1_GCC_64bit-Release/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_7f08d/fast' failed
+make: *** [cmTC_7f08d/fast] Error 2
+
+File /home/zhang/github/Code_Project/head_position/build-head-pose-estimation-master-Desktop_Qt_5_6_1_GCC_64bit-Release/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/zhang/github/Code_Project/head_position/build-head-pose-estimation-master-Desktop_Qt_5_6_1_GCC_64bit-Release/CMakeFiles/CMakeTmp
+
+Run Build Command:"/usr/bin/make" "cmTC_d5353/fast"
+/usr/bin/make -f CMakeFiles/cmTC_d5353.dir/build.make CMakeFiles/cmTC_d5353.dir/build
+make[1]: Entering directory '/home/zhang/github/Code_Project/head_position/build-head-pose-estimation-master-Desktop_Qt_5_6_1_GCC_64bit-Release/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_d5353.dir/CheckFunctionExists.c.o
+/usr/bin/cc    -fPIC -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_d5353.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.5/Modules/CheckFunctionExists.c
+Linking C executable cmTC_d5353
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_d5353.dir/link.txt --verbose=1
+/usr/bin/cc  -fPIC -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTC_d5353.dir/CheckFunctionExists.c.o  -o cmTC_d5353 -rdynamic -lpthreads 
+/usr/bin/ld: 找不到 -lpthreads
+collect2: error: ld returned 1 exit status
+CMakeFiles/cmTC_d5353.dir/build.make:97: recipe for target 'cmTC_d5353' failed
+make[1]: *** [cmTC_d5353] Error 1
+make[1]: Leaving directory '/home/zhang/github/Code_Project/head_position/build-head-pose-estimation-master-Desktop_Qt_5_6_1_GCC_64bit-Release/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_d5353/fast' failed
+make: *** [cmTC_d5353/fast] Error 2
+
+

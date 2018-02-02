@@ -150,7 +150,7 @@ class Stopwatch
         static unsigned long long int getCurrentSystemTime()
         {
             timeval tv;
-            gettimeofday(&tv, 0);  //获得自1970年1月1日到现在的时间,把时间信息存放到结构体tv中
+            gettimeofday(&tv, 0);               //获得自1970年1月1日到现在的时间,把时间信息存放到结构体tv中
             unsigned long long int time = (unsigned long long int)(tv.tv_sec * 1000000 + tv.tv_usec);  //us 数
             return time;
         }

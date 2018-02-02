@@ -34,7 +34,7 @@ const GLfloat Pi = 3.1415926536f;*/
 #include <GL/glut.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <GL/glut.h>
+
 
 // 太阳、地球和月亮
 // 假设每个月都是30天
@@ -76,7 +76,7 @@ void myDisplay(void)
 
 void myIdle(void)
 {
-    /* 新的函数，在空闲时调用，作用是把日期往后移动一天并重新绘制，达到动画效果 */
+
     ++day;
     if( day >= 360 )
         day = 0;
