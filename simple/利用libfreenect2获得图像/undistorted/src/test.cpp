@@ -16,6 +16,11 @@
 using namespace std;
 using namespace cv;
 
+static int cyc_count=0;
+float time_sum;
+double fps=0;
+ostringstream outtext;
+
 
 class  libfreenect2_driver
 {
@@ -138,6 +143,7 @@ void libfreenect2_driver::Grab_image_KinectV2(void)
     Mat rgbmat, irmat,depthmat, depthmatUndistorted , rgbd, rgbd2;
 
     cv::namedWindow("rgb", WND_PROP_ASPECT_RATIO);
+    cv::namedWindow("depth", WND_PROP_ASPECT_RATIO);
     //cv::namedWindow("ir", WND_PROP_ASPECT_RATIO);
     //cv::namedWindow("depth", WND_PROP_ASPECT_RATIO);
     //cv::namedWindow("undistorted", WND_PROP_ASPECT_RATIO);
@@ -145,6 +151,9 @@ void libfreenect2_driver::Grab_image_KinectV2(void)
 
     if(!protonect_shutdown)
     {
+        double start_time_total = (double)cv::getTickCount();
+        cyc_count++;
+
         listener.waitForNewFrame(frames);
         libfreenect2::Frame *rgb = frames[libfreenect2::Frame::Color];
         libfreenect2::Frame *ir = frames[libfreenect2::Frame::Ir];
@@ -154,8 +163,31 @@ void libfreenect2_driver::Grab_image_KinectV2(void)
         cv::Mat(ir->height, ir->width, CV_32FC1, ir->data).copyTo(irmat);
         cv::Mat(depth->height, depth->width, CV_32FC1, depth->data).copyTo(depthmat);
 
+        //这部分是为了获得帧率添加的辅助程序
+        //text on screen
+
+        double time_total=((double)cv::getTickCount() - start_time_total)*1000.0/cv::getTickFrequency();
+        time_sum=time_sum+time_total;
+        if(cyc_count>=6)
+        {
+
+            outtext.str("");
+            fps=1000.0/(time_sum/cyc_count);
+            //cout<<fps<<endl;
+            outtext << "fps: " << setprecision(3) <<fps;
+
+            cyc_count=0;
+            time_sum=0;
+        }
+        cv::putText(rgbmat, outtext.str(), cv::Point(80, 180), cv::FONT_HERSHEY_SIMPLEX, 6, cv::Scalar(0, 0, 255),4,8,0);
+        cv::putText(depthmat, outtext.str(), cv::Point(50, 80), cv::FONT_HERSHEY_SIMPLEX, 2, cv::Scalar(0, 0, 255),2,8,0);
+         cout<<"the fps of get image from kinect2 is : "<<fps<<" hz"<<endl;
+
         cv::imshow("rgb", rgbmat);
         cv::imshow("depth", depthmat / 4500.0f);
+
+
+
 
         registration->apply(rgb, depth, &undistorted, &registered, true, &depth2rgb);
 
@@ -163,11 +195,11 @@ void libfreenect2_driver::Grab_image_KinectV2(void)
         cv::Mat(registered.height, registered.width, CV_8UC4, registered.data).copyTo(rgbd);
         cv::Mat(depth2rgb.height, depth2rgb.width, CV_32FC1, depth2rgb.data).copyTo(rgbd2);
 
-        cv::imshow("undistorted", depthmatUndistorted / 4500.0f);
-       // cv::imshow("undistorted", depthmatUndistorted);
-        cv::imshow("registered", rgbd);
 
-        //cv::waitKey(0);
+
+        cv::imshow("undistorted", depthmatUndistorted / 4500.0f);
+        //cv::imshow("undistorted", depthmatUndistorted);
+        cv::imshow("registered", rgbd);
 
         int key = cv::waitKey(1);
         protonect_shutdown = protonect_shutdown || (key > 0 && ((key & 0xFF) == 27)); // shutdown on escape
@@ -178,13 +210,19 @@ void libfreenect2_driver::Grab_image_KinectV2(void)
 
 }
 
+
+
 int main(void)
 {
    libfreenect2_driver temp;
    temp.Initial_KinectV2_driver();
+
    while(1)
    {
+
        temp.Grab_image_KinectV2();
+
+
    }
 
 }

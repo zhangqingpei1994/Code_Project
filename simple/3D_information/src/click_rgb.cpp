@@ -154,7 +154,7 @@ private:
     subImageColor = new image_transport::SubscriberFilter(it, topicColor, queueSize, hints);
     subImageDepth = new image_transport::SubscriberFilter(it, topicDepth, queueSize, hints);
     subCameraInfoColor = new message_filters::Subscriber<sensor_msgs::CameraInfo>(nh, topicCameraInfoColor, queueSize); //订阅cameraInformation话题得到相机参数信息
-    subCameraInfoDepth = new message_filters::Subscriber<sensor_msgs::CameraInfo>(nh, topicCameraInfoDepth, queueSize); //订阅的话题时bridge发布的，回调函数在useExact中有定义
+    subCameraInfoDepth = new message_filters::Subscriber<sensor_msgs::CameraInfo>(nh, topicCameraInfoDepth, queueSize); //订阅的话题是bridge发布的，回调函数在useExact中有定义
 
     if(useExact)
     {
@@ -178,6 +178,7 @@ private:
       }
       std::this_thread::sleep_for(duration);
     }
+
     cloud = pcl::PointCloud<pcl::PointXYZRGBA>::Ptr(new pcl::PointCloud<pcl::PointXYZRGBA>());
     cloud->height = color.rows;
     cloud->width = color.cols;
@@ -274,6 +275,14 @@ private:
   // 从全局变量获取当前鼠标坐标
   int img_x = mouseX;
   int img_y = mouseY;
+
+  //自己添加的     =======================================================================
+  int img_x_click,img_y_click,img_x_click_last,img_y_click_last;
+  geometry_msgs::PointStamped ptMsg_temp;
+  geometry_msgs::PointStamped ptMsg_temp_last;
+  //=====================================================================================
+
+
   geometry_msgs::PointStamped ptMsg;
   ptMsg.header.frame_id = "kinect_link";
 
@@ -314,7 +323,17 @@ private:
           ptMsg.header.stamp = ros::Time::now();
           leftBtnPointPub.publish(ptMsg);
           ros::spinOnce();
+
+         //自己加的===========================================================================
+          ptMsg_temp_last=ptMsg_temp;
+          img_x_click_last=img_x_click;
+          img_y_click_last=img_y_click;
+          img_x_click=img_x;
+          img_y_click=img_y;
+          ptMsg_temp=ptMsg;
+         //==================================================================================
           break;
+
       case cv::EVENT_RBUTTONUP:
           ptMsg.header.stamp = ros::Time::now();
           rightBtnPointPub.publish(ptMsg);
@@ -343,7 +362,21 @@ private:
       ossXYZ << "( " << ptMsg.point.x << ", " << ptMsg.point.y
                                   << ", " << ptMsg.point.z << " )";
       cv::putText(color, ossXYZ.str(), cv::Point(img_x, img_y), font, 1, colorText, 3, CV_AA);
-      // cv::circle(color, cv::Point(mouseX, mouseY), 5, cv::Scalar(0, 0, 255), -1);
+
+      //自己加的程序 =================================================================================================
+      ossXYZ.str("");
+      ossXYZ << "( " << ptMsg_temp.point.x << ", " << ptMsg_temp.point.y
+                                  << ", " << ptMsg_temp.point.z << " )";
+      cv::putText(color, ossXYZ.str(), cv::Point(img_x_click+10, img_y_click), font, 1, colorText, 3, CV_AA);
+      cv::circle(color, cv::Point(img_x_click, img_y_click), 5, cv::Scalar(0, 255, 0), -1);
+
+      ossXYZ.str("");
+      ossXYZ << "( " << ptMsg_temp_last.point.x << ", " << ptMsg_temp_last.point.y
+                                  << ", " << ptMsg_temp_last.point.z << " )";
+      cv::putText(color, ossXYZ.str(), cv::Point(img_x_click_last+10, img_y_click_last), font, 1, colorText, 3, CV_AA);
+      cv::circle(color, cv::Point(img_x_click_last, img_y_click_last), 5, cv::Scalar(0, 255, 0), -1);
+      //============================================================================================================
+
       cv::imshow(window_name, color);
       cv::waitKey(1);
     }

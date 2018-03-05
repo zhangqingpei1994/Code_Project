@@ -38,7 +38,7 @@ int main()
     cv::Mat dist_coeffs = cv::Mat(5, 1, CV_64FC1, D);
 
     //fill in 3D ref points(world coordinates), model referenced from http://aifi.isr.uc.pt/Downloads/OpenGL/glAnthropometric3DModel.cpp
-    std::vector<cv::Point3d> object_pts;
+    std::vector<cv::Point3d> object_pts;       //14个点
     object_pts.push_back(cv::Point3d(6.825897, 6.760612, 4.402142));     //#33 left brow left corner
     object_pts.push_back(cv::Point3d(1.330353, 7.122144, 6.903745));     //#29 left brow right corner
     object_pts.push_back(cv::Point3d(-1.330353, 7.122144, 6.903745));    //#34 right brow left corner
@@ -65,7 +65,7 @@ int main()
     cv::Mat euler_angle = cv::Mat(3, 1, CV_64FC1);
     
     //reproject 3D points world coordinate axis to verify result pose
-    std::vector<cv::Point3d> reprojectsrc;
+    std::vector<cv::Point3d> reprojectsrc;     //8个点
     reprojectsrc.push_back(cv::Point3d(10.0, 10.0, 10.0));
     reprojectsrc.push_back(cv::Point3d(10.0, 10.0, -10.0));
     reprojectsrc.push_back(cv::Point3d(10.0, -10.0, -10.0));
@@ -96,7 +96,7 @@ int main()
         cv_image<bgr_pixel> cimg(temp);
 
         // Detect faces 
-        std::vector<rectangle> faces = detector(cimg);
+        std::vector<rectangle> faces = detector(cimg);   //检测人脸
 
         // Find the pose of each face
         if (faces.size() > 0)
@@ -160,6 +160,17 @@ int main()
             outtext.str("");
             outtext << "Z: " << setprecision(3) << euler_angle.at<double>(2);
             cv::putText(temp, outtext.str(), cv::Point(50, 80), cv::FONT_HERSHEY_SIMPLEX, 0.75, cv::Scalar(0, 0, 0));
+            outtext.str("");
+
+            //show angle result
+            outtext << "Tx: " << setprecision(3) << translation_vec.at<double>(0);
+            cv::putText(temp, outtext.str(), cv::Point(200, 40), cv::FONT_HERSHEY_SIMPLEX, 0.75, cv::Scalar(0, 0, 0));
+            outtext.str("");
+            outtext << "Ty: " << setprecision(3) << translation_vec.at<double>(1);
+            cv::putText(temp, outtext.str(), cv::Point(200, 60), cv::FONT_HERSHEY_SIMPLEX, 0.75, cv::Scalar(0, 0, 0));
+            outtext.str("");
+            outtext << "Tz: " << setprecision(3) << translation_vec.at<double>(2);
+            cv::putText(temp, outtext.str(), cv::Point(200, 80), cv::FONT_HERSHEY_SIMPLEX, 0.75, cv::Scalar(0, 0, 0));
             outtext.str("");
 
             image_pts.clear();
