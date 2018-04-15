@@ -1,0 +1,3 @@
+/home/zhang/github/Code_Project/head_position/face_feature_build/CMakeFiles/edit_cache.dir
+/home/zhang/github/Code_Project/head_position/face_feature_build/CMakeFiles/rebuild_cache.dir
+/home/zhang/github/Code_Project/head_position/face_feature_build/CMakeFiles/face-feature-local.dir

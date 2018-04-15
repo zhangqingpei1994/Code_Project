@@ -26,7 +26,7 @@ int main()
         cerr << "Unable to connect to camera" << endl;
         return EXIT_FAILURE;
         }
-    //Load face detection and pose estimation models (dlib).
+    //需要一个人脸检测器，获得一个边界框
     frontal_face_detector detector = get_frontal_face_detector();
 
     shape_predictor predictor;
