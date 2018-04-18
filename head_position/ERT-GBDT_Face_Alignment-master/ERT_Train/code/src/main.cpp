@@ -6,11 +6,11 @@ int main(int argc, char* argv[])
 //============load image======================//
 	std::cout << "[Stage 1] Loading image" << std::endl;
 	std::vector<sample> traindata;
-    std::string trainpath = "/home/zhang/lfpw/trainset/";
+    std::string trainpath = "/home/zhang/数据集/lfpw/trainset/";
 	Loadimages(traindata, trainpath);
 
 	std::vector<sample> validationdata;
-    std::string validationpath = "/home/zhang/lfpw/testset/";
+    std::string validationpath = "/home/zhang/数据集/lfpw/testset/";
 	Loadimages(validationdata, validationpath);
 
 //============data preprocessing==============//

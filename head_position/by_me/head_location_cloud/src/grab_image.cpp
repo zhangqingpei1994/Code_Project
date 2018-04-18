@@ -271,3 +271,7 @@ void grab_image::Grab_image_KinectV2(cv::Mat& rgb_reg,cv::Mat& depth_undistor,cv
 }
 
 
+
+
+
+

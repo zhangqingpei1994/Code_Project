@@ -52,6 +52,8 @@ bool IsDetected(const cv::Rect &box, const float &x_max, const float &x_min, con
 	return true;
 }
 
+
+
 void Loadimages(std::vector<sample> &data, const std::string &path)
 {
 	std::string images_path = path + "png/";
@@ -73,7 +75,8 @@ void Loadimages(std::vector<sample> &data, const std::string &path)
 		std::string temp;
 		getline(fin, temp);
 		int landmarks_number = 0;
-		fin >> temp >> landmarks_number;
+        fin >> temp >> landmarks_number;   // >> 是以空格作为分隔符的
+
 		getline(fin, temp);
 		getline(fin, temp);
 
@@ -126,6 +129,7 @@ void Loadimages(std::vector<sample> &data, const std::string &path)
 				data.push_back(temp);
 			}
 		}
+
 		if(i % (images_number / 10) == 0 && i != 0)
 				std::cout << 10 * i / (images_number / 10) << "% has finished." << std::endl;
 	}

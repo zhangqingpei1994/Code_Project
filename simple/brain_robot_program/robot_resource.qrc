@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/new/prefix1">
+        <file>80U58PICPJM_1024.jpg</file>
+        <file>head.jpeg</file>
+        <file>180U58PICPJM_1024.jpg</file>
+        <file>timg.jpeg</file>
+        <file>1timg.jpeg</file>
+        <file>picture/图片1.jpg</file>
+        <file>picture/Screenshot from 2017-11-19 11:51:39.png</file>
+        <file>picture/yiyu.png</file>
+    </qresource>
+</RCC>
