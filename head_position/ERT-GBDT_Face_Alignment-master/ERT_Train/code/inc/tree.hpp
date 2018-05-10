@@ -24,8 +24,8 @@ private:
 									const int &u_index, const int &v_index, const float &threshold, const int &index, bool whether_change_index);
 
 private:
-	int depth;
-	int feature_number_of_node;
+        int depth;
+        int feature_number_of_node;   //20
 	float lamda;
 
 	int _root_number;

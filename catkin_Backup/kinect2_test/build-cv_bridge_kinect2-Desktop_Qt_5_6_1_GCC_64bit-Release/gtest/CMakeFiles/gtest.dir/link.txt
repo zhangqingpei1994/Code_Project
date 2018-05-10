@@ -1,0 +1,1 @@
+/usr/bin/g++  -fPIC  -std=c++11 -g  -shared -Wl,-soname,libgtest.so -o libgtest.so CMakeFiles/gtest.dir/src/gtest-all.cc.o  -L/home/zhang/catkin_ws/src/kinect2_test/build-cv_bridge_kinect2-Desktop_Qt_5_6_1_GCC_64bit-Release/gtest/src -lpthread -Wl,-rpath,/home/zhang/catkin_ws/src/kinect2_test/build-cv_bridge_kinect2-Desktop_Qt_5_6_1_GCC_64bit-Release/gtest/src 

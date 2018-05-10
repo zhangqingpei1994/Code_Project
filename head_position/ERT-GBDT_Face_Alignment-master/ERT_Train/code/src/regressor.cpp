@@ -36,6 +36,12 @@ void regressor::compute_similarity_transform_with_mean(std::vector<sample> &data
 	}
 }
 
+/*************************************************************************
+ *  从 global_mean_landmarks找到x和y的最小值和最大值,然后在最小值和最大值之间
+ *  随机生成 feature_pool_size 个点作为特征池中的点(x和y各自随机的),并找出global_mean_landmarks
+ *  中和特征池中的点距离最近点 把该点序号放入数组landmark_index中,把偏差放入offset中
+ *
+ * ***********************************************************************/
 void regressor::generate_feature_pool(const cv::Mat_<float> &global_mean_landmarks)
 {
 	float x_min, x_max, y_min, y_max;
@@ -64,7 +70,7 @@ void regressor::generate_feature_pool(const cv::Mat_<float> &global_mean_landmar
 	x_min -= padding; x_max += padding;
 	y_min -= padding; y_max += padding;
 
-	for(int i = 0; i < feature_pool_size; ++i)
+    for(int i = 0; i < feature_pool_size; ++i)    //feature_pool_size=400
 	{
 		feature_pool(i, 0) = (std::rand() / (float)(RAND_MAX)) * (x_max - x_min) + x_min;
 		feature_pool(i, 1) = (std::rand() / (float)(RAND_MAX)) * (y_max - y_min) + y_min;
@@ -122,17 +128,17 @@ void regressor::train(std::vector<sample> &data, std::vector<sample> &validation
 	regressor::compute_similarity_transform_with_mean(validationdata, global_mean_landmarks);
 	regressor::generate_feature_pool(global_mean_landmarks);
 
-	int landmark_number = global_mean_landmarks.rows;
+    int landmark_number = global_mean_landmarks.rows;     //68个点
 	int time = tree_number / multiple_trees_number;
 	for(int i = 0; i < time; ++i)
 	{	
 
-		std::vector<std::vector<int>> result;
+        std::vector<std::vector<int>> result;          //存的是data在叶子中的位置
 		std::vector<std::vector<int>> result_vali;
 		for(int j = 0; j < multiple_trees_number; ++j)
 		{
 
-			std::vector<int> temp;
+            std::vector<int> temp;                      //存的是data[i]在某棵树的叶子节点中的位置
 			temp.resize(data.size());
 			std::vector<int> temp_vali;
 			temp_vali.resize(validationdata.size());
@@ -156,12 +162,13 @@ void regressor::train(std::vector<sample> &data, std::vector<sample> &validation
 		for(int k = 0; k < data.size(); ++k)
 		{
 			cv::Mat_<float> residual = cv::Mat_<float>::zeros(landmark_number, 2);
-			for(int j = 0; j < multiple_trees_number; ++j)
+            for(int j = 0; j < multiple_trees_number; ++j)   //multiple_trees_number=1
 			{
 				residual += _trees[i * multiple_trees_number + j].model()->residual_model[result[j][k]];
 			}
 			residual /= multiple_trees_number;
-			data[k].landmarks_cur_normalization += shrinkage_factor * residual;
+            //更新每个data的landmarks_cur_normalization
+            data[k].landmarks_cur_normalization += shrinkage_factor * residual;  //shrinkage_factor=0.1 收缩系数
 			normalization(data[k].landmarks_cur, data[k].landmarks_cur_normalization, data[k].scale_rotate_unnormalization, data[k].transform_unnormalization);	
 		}
 

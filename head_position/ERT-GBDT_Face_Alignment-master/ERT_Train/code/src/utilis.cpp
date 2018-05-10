@@ -52,7 +52,11 @@ bool IsDetected(const cv::Rect &box, const float &x_max, const float &x_min, con
 	return true;
 }
 
-
+/*****************************************************************
+ ****    Function Name:  Loadimages
+ ****          功能:     检测出来 path 下的图片中的人脸框,并将相关信息
+ ****                    存储在 data 中
+ * **************************************************************/
 
 void Loadimages(std::vector<sample> &data, const std::string &path)
 {
@@ -145,10 +149,10 @@ void compute_similarity_transform(const cv::Mat_<float> &target, const cv::Mat_<
 	cv::Mat_<float> ones = cv::Mat_<float>::ones(rows, 1);
 
 	cv::Mat_<float> origin_new;
-	cv::hconcat(origin, ones, origin_new);
+    cv::hconcat(origin, ones, origin_new);      //图像拼接函数
 
 	cv::Mat_<float> pinv;
-	cv::invert(origin_new, pinv, cv::DECOMP_SVD);
+    cv::invert(origin_new, pinv, cv::DECOMP_SVD);  //计算伪逆矩阵 ??
 
 	cv::Mat_<float> weight = pinv * target;
 
@@ -165,12 +169,18 @@ void normalization(cv::Mat_<float> &target, const cv::Mat_<float> &origin, const
 {
 	cv::Mat_<float> ones = cv::Mat_<float>::ones(origin.rows, 1);
 	cv::Mat_<float> temp1;
-	cv::hconcat(origin, ones, temp1);
+    cv::hconcat(origin, ones, temp1);            //水平图像拼接
 	cv::Mat_<float> temp2;
-	cv::vconcat(scale_rotate, transform, temp2);
+    cv::vconcat(scale_rotate, transform, temp2);  //垂直图像拼接
 	target = temp1 * temp2;
 }
 
+
+/****************************************************************
+ * @brief check_edge : 检查 data 中的landmarks_cur是否越界
+ * @param data  :      输入数据
+ * used position: GenerateTraindata  和 GenerateValidationdata
+ ****************************************************************/
 void check_edge(sample &data)
 {
 	int rows = data.image.rows;
@@ -189,107 +199,13 @@ void check_edge(sample &data)
 	}
 }
 
-void GenerateValidationdata(std::vector<sample> &data, const cv::Mat_<float> &global_mean_landmarks)
-{
-	cv::Mat_<float> target(4, 2);
 
-	target(0, 0) = 0; target(0, 1) = 0;
-	target(1, 0) = 1; target(1, 1) = 0;
-	target(2, 0) = 0; target(2, 1) = 1;
-	target(3, 0) = 1; target(3, 1) = 1;
 
-	cv::Mat_<float> scale_rotate(2, 2);
-	cv::Mat_<float> transform(1, 2);
-	cv::Mat_<float> origin(4, 2);
-
-	for(int i = 0; i < data.size(); ++i)
-	{	
-		origin(0, 0) = data[i].GTBox.x; origin(0, 1) = data[i].GTBox.y;
-		origin(1, 0) = data[i].GTBox.x + data[i].GTBox.width; origin(1, 1) = data[i].GTBox.y;
-		origin(2, 0) = data[i].GTBox.x; origin(2, 1) = data[i].GTBox.y + data[i].GTBox.height;
-		origin(3, 0) = data[i].GTBox.x + data[i].GTBox.width; origin(3, 1) = data[i].GTBox.y + data[i].GTBox.height;
-
-		compute_similarity_transform(target, origin, scale_rotate, transform);
-
-		data[i].scale_rotate_normalization = scale_rotate.clone();
-		data[i].transform_normalization = transform.clone();
-
-		compute_similarity_transform(origin, target, scale_rotate, transform);
-		
-		data[i].scale_rotate_unnormalization = scale_rotate.clone();
-		data[i].transform_unnormalization = transform.clone();			
-
-		normalization(data[i].landmarks_truth_normalizaiotn, data[i].landmarks_truth, data[i].scale_rotate_normalization, data[i].transform_normalization);
-
-		data[i].landmarks_cur_normalization = global_mean_landmarks.clone();
-		normalization(data[i].landmarks_cur, data[i].landmarks_cur_normalization, 
-				data[i].scale_rotate_unnormalization, data[i].transform_unnormalization);
-		check_edge(data[i]);
-	}
-}
-
-void GenerateTraindata(std::vector<sample> &data, const int &initialization)
-{
-	cv::Mat_<float> target(4, 2);
-
-	target(0, 0) = 0; target(0, 1) = 0;
-	target(1, 0) = 1; target(1, 1) = 0;
-	target(2, 0) = 0; target(2, 1) = 1;
-	target(3, 0) = 1; target(3, 1) = 1;
-
-	cv::Mat_<float> scale_rotate(2, 2);
-	cv::Mat_<float> transform(1, 2);
-	cv::Mat_<float> origin(4, 2);
-
-	int data_size_origin = data.size();
-	data.resize(initialization * data_size_origin);
-
-	for(int i = 0; i < data_size_origin; ++i)
-	{	
-		origin(0, 0) = data[i].GTBox.x; origin(0, 1) = data[i].GTBox.y;
-		origin(1, 0) = data[i].GTBox.x + data[i].GTBox.width; origin(1, 1) = data[i].GTBox.y;
-		origin(2, 0) = data[i].GTBox.x; origin(2, 1) = data[i].GTBox.y + data[i].GTBox.height;
-		origin(3, 0) = data[i].GTBox.x + data[i].GTBox.width; origin(3, 1) = data[i].GTBox.y + data[i].GTBox.height;
-
-		compute_similarity_transform(target, origin, scale_rotate, transform);
-
-		data[i].scale_rotate_normalization = scale_rotate.clone();
-		data[i].transform_normalization = transform.clone();
-
-		compute_similarity_transform(origin, target, scale_rotate, transform);
-		
-		data[i].scale_rotate_unnormalization = scale_rotate.clone();
-		data[i].transform_unnormalization = transform.clone();			
-
-		normalization(data[i].landmarks_truth_normalizaiotn, data[i].landmarks_truth, data[i].scale_rotate_normalization, data[i].transform_normalization);
-	}
-
-	for(int i = 0; i < data_size_origin; ++i)
-	{
-		for(int j = 0; j < initialization; ++j)
-		{
-			if(j != 0)
-				data[i + j * data_size_origin] = data[i];
-
-			int index = 0;
-			do{
-				index = rand() % (data_size_origin);
-			}while(index == i);
-
-			data[i + j * data_size_origin].landmarks_cur_normalization = data[index].landmarks_truth_normalizaiotn.clone();
-			normalization(data[i + j * data_size_origin].landmarks_cur, data[i + j * data_size_origin].landmarks_cur_normalization, 
-				data[i + j * data_size_origin].scale_rotate_unnormalization, data[i + j * data_size_origin].transform_unnormalization);
-			check_edge(data[i + j * data_size_origin]);
-
-			std::stringstream stream;
-			stream << i + j * data_size_origin;
-			data[i + j * data_size_origin].image_name = stream.str() + "_" + data[i + j * data_size_origin].image_name;
-		}
-	}
-
-	std::cout << data.size() << " train images have been generated." << std::endl << std::endl;
-}
-
+/******************************************************************
+ * @brief output : 把 data 中的landmarks_truth 和 landmarks_cur 画出来
+ * @param data   : 输入 数据
+ * @param path   : 保存路径
+ ******************************************************************/
 void output(const sample &data, const std::string &path)
 {
 	cv::Mat_<uchar> image = data.image.clone();
@@ -310,12 +226,116 @@ void output(const sample &data, const std::string &path)
 	cv::imwrite(path_image.c_str(), image);
 }
 
+//-------------只在 main 中调用了一次----------------------------
+void GenerateTraindata(std::vector<sample> &data, const int &initialization)
+{
+    cv::Mat_<float> target(4, 2);
+
+    target(0, 0) = 0; target(0, 1) = 0;
+    target(1, 0) = 1; target(1, 1) = 0;
+    target(2, 0) = 0; target(2, 1) = 1;
+    target(3, 0) = 1; target(3, 1) = 1;
+
+    cv::Mat_<float> scale_rotate(2, 2);
+    cv::Mat_<float> transform(1, 2);
+    cv::Mat_<float> origin(4, 2);
+
+    int data_size_origin = data.size();
+    data.resize(initialization * data_size_origin);
+
+    for(int i = 0; i < data_size_origin; ++i)
+    {
+        origin(0, 0) = data[i].GTBox.x; origin(0, 1) = data[i].GTBox.y;
+        origin(1, 0) = data[i].GTBox.x + data[i].GTBox.width; origin(1, 1) = data[i].GTBox.y;
+        origin(2, 0) = data[i].GTBox.x; origin(2, 1) = data[i].GTBox.y + data[i].GTBox.height;
+        origin(3, 0) = data[i].GTBox.x + data[i].GTBox.width; origin(3, 1) = data[i].GTBox.y + data[i].GTBox.height;
+
+        compute_similarity_transform(target, origin, scale_rotate, transform);
+
+        data[i].scale_rotate_normalization = scale_rotate.clone();
+        data[i].transform_normalization = transform.clone();
+
+        compute_similarity_transform(origin, target, scale_rotate, transform);
+
+        data[i].scale_rotate_unnormalization = scale_rotate.clone();
+        data[i].transform_unnormalization = transform.clone();
+
+        normalization(data[i].landmarks_truth_normalizaiotn, data[i].landmarks_truth, data[i].scale_rotate_normalization, data[i].transform_normalization);
+    }
+
+    for(int i = 0; i < data_size_origin; ++i)
+    {
+        for(int j = 0; j < initialization; ++j)
+        {
+            if(j != 0)
+                data[i + j * data_size_origin] = data[i];
+
+            int index = 0;
+            do
+            {
+              index = rand() % (data_size_origin);
+            }while(index == i);
+
+            data[i + j * data_size_origin].landmarks_cur_normalization = data[index].landmarks_truth_normalizaiotn.clone();
+            normalization(data[i + j * data_size_origin].landmarks_cur, data[i + j * data_size_origin].landmarks_cur_normalization,
+                data[i + j * data_size_origin].scale_rotate_unnormalization, data[i + j * data_size_origin].transform_unnormalization);
+            check_edge(data[i + j * data_size_origin]);
+
+            std::stringstream stream;
+            stream << i + j * data_size_origin;
+            data[i + j * data_size_origin].image_name = stream.str() + "_" + data[i + j * data_size_origin].image_name;
+        }
+    }
+
+    std::cout << data.size() << " train images have been generated." << std::endl << std::endl;
+}
+
+
+//-------------只在 ERT.cpp中调用了一次------
+void GenerateValidationdata(std::vector<sample> &data, const cv::Mat_<float> &global_mean_landmarks)
+{
+    cv::Mat_<float> target(4, 2);
+
+    target(0, 0) = 0; target(0, 1) = 0;
+    target(1, 0) = 1; target(1, 1) = 0;
+    target(2, 0) = 0; target(2, 1) = 1;
+    target(3, 0) = 1; target(3, 1) = 1;
+
+    cv::Mat_<float> scale_rotate(2, 2);
+    cv::Mat_<float> transform(1, 2);
+    cv::Mat_<float> origin(4, 2);
+
+    for(int i = 0; i < data.size(); ++i)
+    {
+        origin(0, 0) = data[i].GTBox.x; origin(0, 1) = data[i].GTBox.y;
+        origin(1, 0) = data[i].GTBox.x + data[i].GTBox.width; origin(1, 1) = data[i].GTBox.y;
+        origin(2, 0) = data[i].GTBox.x; origin(2, 1) = data[i].GTBox.y + data[i].GTBox.height;
+        origin(3, 0) = data[i].GTBox.x + data[i].GTBox.width; origin(3, 1) = data[i].GTBox.y + data[i].GTBox.height;
+
+        compute_similarity_transform(target, origin, scale_rotate, transform);
+
+        data[i].scale_rotate_normalization = scale_rotate.clone();
+        data[i].transform_normalization = transform.clone();
+
+        compute_similarity_transform(origin, target, scale_rotate, transform);
+
+        data[i].scale_rotate_unnormalization = scale_rotate.clone();
+        data[i].transform_unnormalization = transform.clone();
+
+        normalization(data[i].landmarks_truth_normalizaiotn, data[i].landmarks_truth, data[i].scale_rotate_normalization, data[i].transform_normalization);
+
+        data[i].landmarks_cur_normalization = global_mean_landmarks.clone();
+        normalization(data[i].landmarks_cur, data[i].landmarks_cur_normalization,data[i].scale_rotate_unnormalization, data[i].transform_unnormalization);
+        check_edge(data[i]);
+    }
+}
+//--------只在ERT.cpp的train函数中调用了一次(循环的)----------------
 float compute_Error(const std::vector<sample> &data)
 {
-	int ll = 36;
-	int lr = 41;
-	int rl = 42;
-	int rr = 47;
+    int ll = 36;  //左
+    int lr = 41;  //眼
+    int rl = 42;  //右
+    int rr = 47;  //眼
 
 	float total_error = 0;
 	for(int i = 0; i < data.size(); ++i)

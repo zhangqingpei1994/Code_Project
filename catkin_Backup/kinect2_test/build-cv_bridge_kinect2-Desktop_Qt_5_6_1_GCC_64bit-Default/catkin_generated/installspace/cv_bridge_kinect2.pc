@@ -1,0 +1,8 @@
+prefix=/usr/local
+
+Name: cv_bridge_kinect2
+Description: Description of cv_bridge_kinect2
+Version: 0.0.0
+Cflags: 
+Libs: -L/usr/local/lib 
+Requires: 

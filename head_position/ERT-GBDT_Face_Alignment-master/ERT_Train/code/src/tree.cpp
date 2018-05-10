@@ -13,10 +13,18 @@ tree::tree(const int &depth, const int &feature_number_of_node, const float &lam
 	_model.residual_model.resize(_leaf_number);
 }
 
+
+/***************************************************************************************************
+ *       Function Name: generate_candidate_feature
+ *       功能:  首先在feature_pool(大小为400)中随机生成两个不同的随机点作为一对,然后把这两个点在global_mean_landmarks
+ *              中对应的索引存到candidate_landmark_index,把偏差存到candidate_feature_offset中,阈值存到threshold中
+ *              用来分裂节点用的
+ * **************************************************************************************************/
+
 void tree::generate_candidate_feature(const cv::Mat_<float> &feature_pool, const cv::Mat_<float> &offset, const std::vector<int> &landmark_index, 
 										cv::Mat_<float> &candidate_feature_offset, std::vector<int> &candidate_landmark_index, std::vector<float> &threshold)
 {
-	 for(int i = 0; i < feature_number_of_node / 2; ++i)
+     for(int i = 0; i < feature_number_of_node / 2; ++i)  //feature_number_of_node=20
 	 {
 	 	int _x_index;
 	 	int _y_index;
@@ -32,7 +40,7 @@ void tree::generate_candidate_feature(const cv::Mat_<float> &feature_pool, const
 	 		prob_threshold = std::rand() / (float)(RAND_MAX);
 	 	}while(_x_index == _y_index || prob <= prob_threshold);
 
-	 	candidate_landmark_index[2 * i] = landmark_index[_x_index];
+        candidate_landmark_index[2 * i] = landmark_index[_x_index];       // landmark_index[_x_index] 的范围是 0-68
 	 	candidate_landmark_index[2 * i + 1] = landmark_index[_y_index];
 
 	 	candidate_feature_offset(2 * i, 0) = offset(_x_index, 0);
@@ -59,7 +67,7 @@ float tree::splite_node(std::vector<sample> &data, const float &u_x, const float
 		if(data[i].tree_index == index)
 		{
 			cv::Mat_<float> u_offset_temp(1, 2);
-			u_offset_temp(0, 0) = u_x;
+            u_offset_temp(0, 0) = u_x;
 			u_offset_temp(0, 1) = u_y;
 
 			cv::Mat_<float> v_offset_temp(1, 2);
@@ -104,12 +112,12 @@ float tree::splite_node(std::vector<sample> &data, const float &u_x, const float
 
 			if(!whether_change_index)
 			{
-				if(data[i].tree_index == 2 * index + 1)
+                if(data[i].tree_index == 2 * index + 1)   //左子树
 				{
 					mean_left += (data[i].landmarks_truth_normalizaiotn - data[i].landmarks_cur_normalization);
 					++left_number;	
 				}
-				else if(data[i].tree_index == 2 * index + 2)
+                else if(data[i].tree_index == 2 * index + 2)   //右子树
 				{
 					mean_right += (data[i].landmarks_truth_normalizaiotn - data[i].landmarks_cur_normalization);
 					++right_number;
@@ -125,7 +133,7 @@ float tree::splite_node(std::vector<sample> &data, const float &u_x, const float
 		score_left = left_number * mean_left.dot(mean_left);
 		score_right = right_number * mean_right.dot(mean_right);
 
-		return score_left + score_right;
+        return score_left + score_right;    //不懂这个评分是什么意思
 	}
 	return -1;
 }
@@ -137,13 +145,14 @@ void tree::train(std::vector<sample> &data, std::vector<sample> &validationdata,
 		cv::Mat_<float> candidate_feature_offset(feature_number_of_node, 2);
 		std::vector<int> candidate_landmark_index(feature_number_of_node);
 		std::vector<float> threshold(feature_number_of_node / 2);
-		tree::generate_candidate_feature(feature_pool, offset, landmark_index, candidate_feature_offset, candidate_landmark_index, threshold);
+        tree::generate_candidate_feature(feature_pool, offset, landmark_index, candidate_feature_offset, candidate_landmark_index, threshold);  //生成候选特征
 		float max_score;
 		int index_max_score;
 		
 		for(int j = 0; j < feature_number_of_node / 2; ++j)
 		{
-			float score =  tree::splite_node(data, candidate_feature_offset(2 * j, 0), candidate_feature_offset(2 * j, 1), candidate_feature_offset(2 * j + 1, 0), 
+            //这个for 是为了找到 最大score对应的  index_max_score
+            float score =  tree::splite_node(data, candidate_feature_offset(2 * j, 0), candidate_feature_offset(2 * j, 1), candidate_feature_offset(2 * j + 1, 0),
 				candidate_feature_offset(2 * j + 1, 1), candidate_landmark_index[2 * j], candidate_landmark_index[2 * j + 1], threshold[j], i, false);
 			
 			if(j == 0)
@@ -161,7 +170,7 @@ void tree::train(std::vector<sample> &data, std::vector<sample> &validationdata,
 			}
 		}
 		
-		_model.splite_model[i].landmark_index1 = candidate_landmark_index[index_max_score];
+        _model.splite_model[i].landmark_index1 = candidate_landmark_index[index_max_score];     //splite_model 大小为 _root_number
 		_model.splite_model[i].landmark_index2 = candidate_landmark_index[index_max_score + 1];
 		_model.splite_model[i].index1_offset_x = candidate_feature_offset(index_max_score, 0);
 		_model.splite_model[i].index1_offset_y = candidate_feature_offset(index_max_score, 1);
@@ -169,6 +178,7 @@ void tree::train(std::vector<sample> &data, std::vector<sample> &validationdata,
 		_model.splite_model[i].index2_offset_y = candidate_feature_offset(index_max_score + 1, 1);
 		_model.splite_model[i].threshold = threshold[index_max_score / 2];
 		
+        //个人觉得这个没什么大用,只是把data[i]的 tree_index 更新了
 		tree::splite_node(data, _model.splite_model[i].index1_offset_x, _model.splite_model[i].index1_offset_y, _model.splite_model[i].index2_offset_x,
 			 _model.splite_model[i].index2_offset_y, _model.splite_model[i].landmark_index1, _model.splite_model[i].landmark_index2, _model.splite_model[i].threshold, i, true);
 
@@ -184,7 +194,7 @@ void tree::train(std::vector<sample> &data, std::vector<sample> &validationdata,
 	
 	std::vector<int> data_number;
 	data_number.resize(_leaf_number);
-	memset(data_number.data(), 0, _leaf_number * sizeof(int));
+    memset(data_number.data(), 0, _leaf_number * sizeof(int));   // 初始化 data_number 所有元素都为0
 	
 	for(int i = 0; i < data.size(); ++i)
 	{

@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
 	std::cout << "[Stage 1] Loading image" << std::endl;
 	std::vector<sample> traindata;
     std::string trainpath = "/home/zhang/数据集/lfpw/trainset/";
-	Loadimages(traindata, trainpath);
+    Loadimages(traindata, trainpath);    //traindata里面存的是人脸的个数
 
 	std::vector<sample> validationdata;
     std::string validationpath = "/home/zhang/数据集/lfpw/testset/";
@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
 //============data preprocessing==============//
 	std::cout << "[Stage 2] Generating traindata" << std::endl;
 	int initialization = 20;
-	GenerateTraindata(traindata, initialization);
+    GenerateTraindata(traindata, initialization);    //traindata大小变为initialization倍的原来的大小
 
 //============create ERT======================//
 	std::cout << "[Stage 3] Training ERT" << std::endl;

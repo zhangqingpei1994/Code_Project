@@ -34,9 +34,9 @@ private:
 
 	std::vector<tree> _trees;
 
-	cv::Mat_<float> feature_pool;
-	std::vector<int> landmark_index;
-	cv::Mat_<float> offset;
+        cv::Mat_<float> feature_pool;    //根据global_mean_landmarks随机生成的
+        std::vector<int> landmark_index; //记录offset得来的索引  大小为400,索引指的是global_mean_landmarks的行号
+        cv::Mat_<float> offset;          //大小为400 feature_pool中的点和在global_mean_landmarks中对应的最近点之间的偏差
 };
 
 #endif

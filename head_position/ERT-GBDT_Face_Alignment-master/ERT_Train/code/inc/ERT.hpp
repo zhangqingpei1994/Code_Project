@@ -27,17 +27,17 @@ private:
 	void compute_mean_landmarks(const std::vector<sample> &data);
 
 private:
-	cv::Mat_<float> global_mean_landmarks;
+        cv::Mat_<float> global_mean_landmarks;   //68*2  归一化后的坐标  得到后不会改变
 
 	int feature_number_of_node;
-	int feature_pool_size;
+        int feature_pool_size;      // 400
 
-	int cascade_number;
-	int tree_number;
-	int multiple_trees_number;
-	int tree_depth;
-	float padding;
-	float shrinkage_factor;
+        int cascade_number;         // 10
+        int tree_number;            // 500
+        int multiple_trees_number;  // 1
+        int tree_depth;             // 5
+        float padding;              // 0.1
+        float shrinkage_factor;     // 0.1
 
 	int initialization;
 	float lamda;

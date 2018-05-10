@@ -28,6 +28,8 @@ ERT::ERT(const int &cascade_number, const int &tree_number, const int &multiple_
 	std::cout << "ERT model has been created." << std::endl;
 }
 
+
+//--------就在下面 train 函数中 调用了一次 ------------
 void ERT::compute_mean_landmarks(const std::vector<sample> &data)
 {
 	global_mean_landmarks = cv::Mat_<float>::zeros(data[0].landmarks_truth.rows, 2);
@@ -50,18 +52,18 @@ void ERT::train(std::vector<sample> &data, std::vector<sample> &validationdata)
 
 	ERT::compute_mean_landmarks(data);
 
-	GenerateValidationdata(validationdata, global_mean_landmarks);
+    GenerateValidationdata(validationdata, global_mean_landmarks);  //和validationdata大小一样,没乘20
 
-	for(int i = 0; i < cascade_number; ++i)
+    for(int i = 0; i < cascade_number; ++i)   //cascade_number=10
 	{
 
 		if(i == 0)
 		{
 			std::string path = "./../train_origin_landmark";
-			rmdir(path.c_str());
-			mkdir(path.c_str(), S_IRWXU);
+            rmdir(path.c_str());              //删除文件夹的函数,但是感觉没删掉
+            mkdir(path.c_str(), S_IRWXU);     //创建文件夹
 			for(int j = 0; j < 10; ++j)
-				output(data[j], path);
+                output(data[j], path);        //把truth和cur的坐标点在图像中画出来
 
 			path = "./../validation_origin_landmark";
 			rmdir(path.c_str());
@@ -69,6 +71,7 @@ void ERT::train(std::vector<sample> &data, std::vector<sample> &validationdata)
 			for(int j = 0; j < 10; ++j)
 				output(validationdata[j], path);			
 		}
+
 		std::cout << "[Cascade " << i + 1 << "] Training..." << std::endl;
 		regressors[i].train(data, validationdata ,global_mean_landmarks);
 
@@ -94,7 +97,7 @@ void ERT::train(std::vector<sample> &data, std::vector<sample> &validationdata)
 	std::cout << "[Finish]" << std::endl;
 }
 
-void ERT::save(const std::string &path)
+void ERT::save(const std::string &path)     //  path:  /model/ERT_jjr.xml
 {
 	int root_number = std::pow(2, tree_depth - 1) - 1;
 	int leaf_number = std::pow(2, tree_depth - 1);
@@ -186,6 +189,6 @@ void ERT::save(const std::string &path)
 		}
 	}
 
-	remove(path.c_str());
+    remove(path.c_str());       //删除文件  这个是C函数,在stdio库中
 	pt::write_xml(path, tree);
 }

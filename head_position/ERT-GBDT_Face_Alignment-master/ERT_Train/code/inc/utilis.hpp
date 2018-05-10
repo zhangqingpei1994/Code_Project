@@ -16,16 +16,17 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-class sample{
+class sample
+{
 public:
 	std::string image_name;
 	cv::Mat_<uchar> image;
 	cv::Rect GTBox;
 
-	cv::Mat_<float> landmarks_truth;
-	cv::Mat_<float> landmarks_truth_normalizaiotn;
-	cv::Mat_<float> landmarks_cur;
-	cv::Mat_<float> landmarks_cur_normalization;
+        cv::Mat_<float> landmarks_truth;                //pts文件中的点坐标,68*2
+        cv::Mat_<float> landmarks_truth_normalizaiotn;  //pts文件归一化后的坐标
+        cv::Mat_<float> landmarks_cur;
+        cv::Mat_<float> landmarks_cur_normalization;    //随机获得的特征点坐标,归一化的
 	cv::Mat_<float> scale_rotate_normalization;
 	cv::Mat_<float> transform_normalization;
 	cv::Mat_<float> scale_rotate_unnormalization;
@@ -37,7 +38,8 @@ public:
 	int tree_index;
 };
 
-class UnLeafNode{
+class UnLeafNode
+{
 public:
 	int landmark_index1;
 	int landmark_index2;
@@ -48,7 +50,8 @@ public:
 	float threshold;
 };
 
-class TreeModel{
+class TreeModel
+{
 public:
 	std::vector<UnLeafNode> splite_model;
 	std::vector<cv::Mat_<float>> residual_model;

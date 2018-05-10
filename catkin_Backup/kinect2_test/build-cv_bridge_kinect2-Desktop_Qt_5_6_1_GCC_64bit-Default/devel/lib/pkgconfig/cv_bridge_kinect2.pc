@@ -1,0 +1,8 @@
+prefix=/home/zhang/catkin_ws/src/kinect2_test/build-cv_bridge_kinect2-Desktop_Qt_5_6_1_GCC_64bit-Default/devel
+
+Name: cv_bridge_kinect2
+Description: Description of cv_bridge_kinect2
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/zhang/catkin_ws/src/kinect2_test/build-cv_bridge_kinect2-Desktop_Qt_5_6_1_GCC_64bit-Default/devel/lib 
+Requires: 

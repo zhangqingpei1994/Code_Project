@@ -17,7 +17,8 @@
 
 namespace pt = boost::property_tree;
 
-class UnLeafNode{
+class UnLeafNode
+{
 public:
 	int landmark_index1;
 	int landmark_index2;
@@ -26,7 +27,8 @@ public:
 	float threshold;
 };
 
-class TreeModel{
+class TreeModel
+{
 public:
 	std::vector<UnLeafNode> splite_model;
 	std::vector<cv::Mat_<float>> residual_model;
