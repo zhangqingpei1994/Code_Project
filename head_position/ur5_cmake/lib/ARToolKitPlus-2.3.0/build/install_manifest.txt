@@ -1,0 +1,16 @@
+/usr/lib/libARToolKitPlus.so
+/usr/include/ARToolKitPlus/TrackerSingleMarker.h
+/usr/include/ARToolKitPlus/matrix.h
+/usr/include/ARToolKitPlus/ar.h
+/usr/include/ARToolKitPlus/vector.h
+/usr/include/ARToolKitPlus/arBitFieldPattern.h
+/usr/include/ARToolKitPlus/Camera.h
+/usr/include/ARToolKitPlus/arMulti.h
+/usr/include/ARToolKitPlus/extra/rpp.h
+/usr/include/ARToolKitPlus/extra/Hull.h
+/usr/include/ARToolKitPlus/extra/BCH.h
+/usr/include/ARToolKitPlus/arGetInitRot2Sub.h
+/usr/include/ARToolKitPlus/Tracker.h
+/usr/include/ARToolKitPlus/TrackerMultiMarker.h
+/usr/include/ARToolKitPlus/config.h
+/usr/include/ARToolKitPlus/ARToolKitPlus.h

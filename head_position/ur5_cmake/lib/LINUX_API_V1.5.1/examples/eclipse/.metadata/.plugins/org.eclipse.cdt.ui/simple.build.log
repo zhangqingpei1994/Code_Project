@@ -1,0 +1,48 @@
+
+**** Build of configuration Debug for project simple ****
+
+make all 
+Building file: ../main.cpp
+Invoking: GCC C++ Compiler
+g++ -I../../../../include -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"main.d" -MT"main.d" -o"main.o" "../main.cpp"
+In file included from ../../../../include/omd/optopackage.h:4:0,
+                 from ../../../../include/omd/opto.h:3,
+                 from ../main.cpp:2:
+../../../../include/omd/sensorconfig.h:4:28: warning: scoped enums only available with -std=c++11 or -std=gnu++11
+ enum sensor_state:unsigned int { no_sensor = 0, overload_x, overload_y, overload_z, sensor_failure, sensor_ok, conn_faliure };
+                            ^
+../../../../include/omd/sensorconfig.h:5:28: warning: scoped enums only available with -std=c++11 or -std=gnu++11
+ enum sensor_speed:unsigned int { speed_1000hz = 0, speed_333hz, speed_100hz, speed_30hz };
+                            ^
+../../../../include/omd/sensorconfig.h:6:29: warning: scoped enums only available with -std=c++11 or -std=gnu++11
+ enum sensor_filter:unsigned int { no_filter = 0, filter_150hz, filter_50hz, filter_15hz };
+                             ^
+../../../../include/omd/sensorconfig.h:7:27: warning: scoped enums only available with -std=c++11 or -std=gnu++11
+ enum sensor_mode:unsigned int { mode_raw = 0, mode_comp };
+                           ^
+../../../../include/omd/sensorconfig.h:9:23: warning: ‘SensorConfig::mode’ is too small to hold all values of ‘enum sensor_mode’
+     sensor_mode mode: 1;
+                       ^
+../../../../include/omd/sensorconfig.h:10:27: warning: ‘SensorConfig::filter’ is too small to hold all values of ‘enum sensor_filter’
+     sensor_filter filter: 2;
+                           ^
+../../../../include/omd/sensorconfig.h:11:25: warning: ‘SensorConfig::speed’ is too small to hold all values of ‘enum sensor_speed’
+     sensor_speed speed: 2;
+                         ^
+../../../../include/omd/sensorconfig.h:12:25: warning: ‘SensorConfig::state’ is too small to hold all values of ‘enum sensor_state’
+     sensor_state state: 3;
+                         ^
+../main.cpp: In function ‘int main()’:
+../main.cpp:18:17: warning: unused variable ‘size’ [-Wunused-variable]
+             int size=daq.read(pack3D,false); // Reading Sensor #0 (up to 16 Sensors)
+                 ^
+../main.cpp:25:17: warning: unused variable ‘size’ [-Wunused-variable]
+             int size=daq.read6D(pack6D,false);
+                 ^
+Finished building: ../main.cpp
+ 
+Building target: simple
+Invoking: GCC C++ Linker
+g++ -L../../../../lib -L../../../../QtLIBS/lib -o"simple"  ./main.o   -lOMD -lQt5Core -lQt5SerialPort -licudata -licui18n -licuuc
+Finished building target: simple
+ 

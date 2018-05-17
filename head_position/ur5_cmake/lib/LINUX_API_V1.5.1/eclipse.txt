@@ -1,0 +1,6 @@
+eclipse examples included (eclipse version: Helios Service Release 2 Build id: 20110218-0911)
+To compile the examples you might import the API examples/eclipse workspace to your workspace then
+build the examples. To run the examples, you should copy /lib/* to the usr/lib.
+
+* You can use newer version of eclipse, Mars.1 Release (4.5.1) was tested and can 
+import the workspace too.

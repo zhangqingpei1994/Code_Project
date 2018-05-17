@@ -1,0 +1,14 @@
+-I/home/linzc/cmake/ur5_cmake/bp_nn
+-I/home/linzc/cmake/ur5_cmake/PD
+-I/home/linzc/cmake/ur5_cmake/mythread
+-I/home/linzc/cmake/ur5_cmake/Face_recognition
+-I/home/linzc/cmake/ur5_cmake/UR5_kin
+-I/home/linzc/cmake/ur5_cmake/robotState
+-I/home/linzc/cmake/ur5_cmake/pose_detect
+-I/home/linzc/cmake/ur5_cmake/force_sensor
+-I/home/linzc/cmake/ur5_cmake/textxml
+-I/home/linzc/cmake/ur5_cmake
+-I/home/linzc/cmake/ur5_cmake/build
+-o
+/home/linzc/cmake/ur5_cmake/build/moc_mainwindow.cpp
+/home/linzc/cmake/ur5_cmake/mainwindow.h

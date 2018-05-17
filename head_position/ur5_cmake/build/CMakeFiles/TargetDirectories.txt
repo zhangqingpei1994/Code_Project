@@ -1,0 +1,4 @@
+/home/linzc/cmake/ur5_cmake/build/CMakeFiles/edit_cache.dir
+/home/linzc/cmake/ur5_cmake/build/CMakeFiles/rebuild_cache.dir
+/home/linzc/cmake/ur5_cmake/build/CMakeFiles/brain_ur5.dir
+/home/linzc/cmake/ur5_cmake/build/CMakeFiles/brain_ur5_automoc.dir
