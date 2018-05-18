@@ -1,0 +1,12 @@
+    本工程是一个QT界面工程,是在线手眼标定的采集数据部分
+
+    在用的时候要配合matlab的代码去使用,这个工程的主要作用是得到一个TCP_position.txt(默认是存在/home/zhang/ 文件下,即使一开始没有也会自己创建) 和 所需要的image data, image data 默认会存到生成的可执行程序同级目录下的picture_data文件夹下,这个文件夹需要自己提前创建好,否则image存不下来.
+
+    然后我们将这个程序得到的TCP_position.txt和image data传给matlab,供matlab使用.自己可以在MainWindow的构造函数中设置TCP_position.txt和image data的保存路径,可以直接改成matlab的使用路径,这样就省得再复制TCP_position.txt和image data到matlab的工作路径了.自己由于时间的原因没去仔细优化,所以以后有时间再去搞吧.
+
+默认使用的时候的步骤:
+  1)在可执行程序同级目录下创建picture_data文件夹,然后开始标定就可以(连接->START->Take Picture(n次)->Start  
+      Calibration)
+  2)把生成的TCP_position.txt和image data复制到matlab工作文件夹下.
+
+  
