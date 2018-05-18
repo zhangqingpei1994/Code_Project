@@ -2,13 +2,19 @@
 QString movelpos(double x, double y, double z, double Rx, double Ry, double Rz, double a, double v)
 {
     QString  commondqueue="def f():\n\t";
-     QString strInstruct=QString("wp1=p[%1,%2,%3,%4,%5,%6]\n\t").arg(x).arg(y).arg(z).arg(Rx).arg(Ry).arg(Rz);
-       strInstruct+=QString("movel(wp1,a=%1,v=%2)\n\t").arg(a).arg(v);
-       if(strInstruct.right(1).toLatin1() != "\n")
-               strInstruct.append('\n');
-           commondqueue+=strInstruct;
-           commondqueue+="end\n";
-           return commondqueue;
+
+    QString strInstruct=QString("wp1=p[%1,%2,%3,%4,%5,%6]\n\t").arg(x).arg(y).arg(z).arg(Rx).arg(Ry).arg(Rz);
+
+    strInstruct+=QString("movel(wp1,a=%1,v=%2)\n\t").arg(a).arg(v);
+
+    if(strInstruct.right(1).toLatin1() != "\n")
+         strInstruct.append('\n');
+
+    commondqueue+=strInstruct;
+
+    commondqueue+="end\n";
+
+    return commondqueue;
 
 }
 QString moveljiont(double q1, double q2, double q3, double q4, double q5, double q6, double a, double v)

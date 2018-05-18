@@ -88,6 +88,7 @@ private:
     Mat frame;
     QImage image;
     forceThread thread;
+
     QTcpSocket *tcpClient;
 
 
@@ -98,6 +99,8 @@ private:
     bool connect_kinect2;
     bool connect_ur5;
     Track_head trackhead;
+
+    double target_last[6];
 };
 
 #endif

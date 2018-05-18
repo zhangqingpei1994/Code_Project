@@ -94,6 +94,8 @@ void Track_head::Detect_facial_points(cv::Mat & color)
       coordinate_point_2d.push_back(cv::Point(shape.part(42).x(), shape.part(42).y()));
       coordinate_point_2d.push_back(cv::Point(shape.part(45).x(), shape.part(45).y()));
 
+      std::cout<<"coordinate_point_2d.size: "<<coordinate_point_2d.size()<<std::endl;
+
     }
 }
 
@@ -135,7 +137,7 @@ void Track_head::createCloud(const cv::Mat &depth, const cv::Mat &color, pcl::Po
 }
 
 
-void Track_head::detect_face(cv::Mat& color_in,cv::Mat& depth_in)
+bool Track_head::detect_face(cv::Mat& color_in,cv::Mat& depth_in)
 {
         Detect_facial_points(color_in);
 
@@ -146,9 +148,10 @@ void Track_head::detect_face(cv::Mat& color_in,cv::Mat& depth_in)
         cv::setMouseCallback(window_name, onMouse_click, nullptr);    // 注册鼠标回调函数, 第三个参数是C++11中的关键字, 若不支持C++11, 替换成NULL
         show_clicked_3d_infor(color_in,depth_in);
         cv::imshow(window_name, color_in);
-        cv::waitKey(1);*/
+        cv::waitKey(1);
+        viewer.showCloud(cloud);*/
 
-        //viewer.showCloud(cloud);
+        return have_detect_face;
 }
 
 
@@ -191,50 +194,63 @@ void Track_head::get_Head_Coordinate(void)
 
          head_ori=(coordinate_point_3d[7]+coordinate_point_3d[6]+coordinate_point_3d[5]+coordinate_point_3d[4])/4.0;
 
-         T_head_to_arm=Eigen::Isometry3d::Identity();
+         T_head_to_cam=Eigen::Isometry3d::Identity();
          for(int i=0;i<3;i++)
          {
-           T_head_to_arm(i,0)=head_X_inCam(i,0);
-           T_head_to_arm(i,1)=head_Y_inCam(i,0);
-           T_head_to_arm(i,2)=head_Z_inCam(i,0);
-           T_head_to_arm(i,3)=head_ori(i,0);
+           T_head_to_cam(i,0)=head_X_inCam(i,0);
+           T_head_to_cam(i,1)=head_Y_inCam(i,0);
+           T_head_to_cam(i,2)=head_Z_inCam(i,0);
+           T_head_to_cam(i,3)=head_ori(i,0);
          }
+
+         std::cout<<"head to cam: "<<std::endl<<T_head_to_cam.matrix()<<std::endl;
 
      }
 }
 
-void Track_head::track_head(double speed, Eigen::Vector4d & target)
+void Track_head::track_head( double *target)
 {
+      get_Head_Coordinate();
 
-  get_Head_Coordinate();
+      T_illpoint_to_base= cam_to_armbase * T_head_to_cam* T_illpoint_to_head ;
 
-  if(speed<0.005)
-  {
-     target_nose1=nose1_ur5+differ1;
-     target_nose2=nose2_ur5+differ2;
-     target=(target_nose1+target_nose2)/2;
-     std::cout<<"target: "<<target(0,0)<<" "<<target(1,0)<<" "<<target(2,0)<<std::endl;
-  }
+      std::cout<<"T_illpoint_to_base:"<<std::endl<<T_illpoint_to_base.matrix()<<std::endl;
+
+      cv::Mat R_matrix = (cv::Mat_<double>(3,3) << T_illpoint_to_base(0,0),  T_illpoint_to_base(0,1),  T_illpoint_to_base(0,2),
+                                                   T_illpoint_to_base(1,0),  T_illpoint_to_base(1,1),  T_illpoint_to_base(1,2),
+                                                   T_illpoint_to_base(2,0),  T_illpoint_to_base(2,1),  T_illpoint_to_base(2,2));
+      cv::Mat R_vec;
+      cv::Rodrigues(R_matrix, R_vec);
+
+      target[0]=T_illpoint_to_base(0,3);
+      target[1]=T_illpoint_to_base(1,3);
+      target[2]=T_illpoint_to_base(2,3);
+      target[3]=R_vec.at<double>(0,0);
+      target[4]=R_vec.at<double>(1,0);
+      target[5]=R_vec.at<double>(2,0);
+}
+
+
+void Track_head::get_end_to_base(double ur5_Px,double ur5_Py,double ur5_Pz,double ur5_Rx,double ur5_Ry,double ur5_Rz)
+{
+    cv::Mat R_vector = (cv::Mat_<double>(3,1) << ur5_Rx, ur5_Ry, ur5_Rz );
+    cv::Mat R;
+    cv::Rodrigues(R_vector, R);
+    Eigen::Matrix3d r;
+    cv::cv2eigen(R, r);
+    T_end_to_base=Eigen::Isometry3d::Identity();
+    T_end_to_base.prerotate(r);
+    T_end_to_base.pretranslate(Eigen::Vector3d(ur5_Px,ur5_Py,ur5_Pz));
 
 }
 
-void Track_head::setup_coordinate(double ur5_Px,double ur5_Py,double ur5_Pz,double ur5_Rx,double ur5_Ry,double ur5_Rz)
+void Track_head::get_illpoint_to_head(void)
 {
+      get_Head_Coordinate();
 
-    cv::Mat R_vector = (cv::Mat_<double>(3,1) << ur5_Rx, ur5_Ry, ur5_Rz );
-    cv::Mat R;
+      T_illpoint_to_head= T_head_to_cam.inverse() * armbase_to_cam *T_end_to_base;
 
-    cv::Rodrigues(R_vector, R);
-
-    Eigen::Matrix3d r;
-
-    cv::cv2eigen(R, r);
-
-    T_end_to_base=Eigen::Isometry3d::Identity();
-
-    T_end_to_base.prerotate(r);
-
-    T_end_to_base.pretranslate(Eigen::Vector3d(ur5_Px,ur5_Py,ur5_Pz));
+      std::cout<<"illpoint_to_head: "<<std::endl<<T_illpoint_to_head.matrix()<<std::endl;
 
 }
 

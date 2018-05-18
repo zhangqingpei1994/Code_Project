@@ -7,7 +7,7 @@ void init_traker(TrackerSingleMarker *tracker,int maker_width)
     //设置图像格式为灰度图PIXEL_FORMAT_ABGR
     tracker->setPixelFormat(ARToolKitPlus::PIXEL_FORMAT_LUM);
     // 载入自己相机的标定内参
-    if (!tracker->init("/home/zhang/brain_face_xml/camera1280720.cal", 1.0f, 1000.0f)) // load MATLAB file
+    if (!tracker->init("/home/zhang/brain_face_xml/camera19201080.cal", 1.0f, 1000.0f)) // load MATLAB file
     {
         printf("ERROR: init() failed\n");
 
@@ -77,7 +77,7 @@ int Positing::oldCalcuate(Mat src,Mat &dst,TrackerSingleMarker * tracker,double 
 //    {
 //        cv::cvtColor(src,image_gray,cv::COLOR_BGR2GRAY);
 //    }
-    Positing::tryAutoThreshold(image_gray,tracker,markInfo,outputMatrix,150);
+    Positing::tryAutoThreshold(image_gray,tracker,markInfo,outputMatrix,100);
 
     Positing::drawMarkerInfo(dst,markInfo);
 

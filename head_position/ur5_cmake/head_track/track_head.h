@@ -34,11 +34,8 @@ class Track_head
           have_detect_face=false;
        }
 
-       Eigen::Affine3d handeye_data_Affin3d;
-
-       Eigen::Vector4d differ1,differ2;
-
-       double Rx,Ry,Rz;
+       Eigen::Isometry3d cam_to_armbase;
+       Eigen::Isometry3d armbase_to_cam;
 
    private:
 
@@ -65,7 +62,6 @@ class Track_head
 
        const int font = cv::FONT_HERSHEY_SIMPLEX;
 
-
        /***************人脸特征点定位************************/
        dlib::image_window win;
 
@@ -77,11 +73,14 @@ class Track_head
 
        bool have_detect_face;
 
-
       /*******************追踪头部**************************/
-      Eigen::Isometry3d T_end_to_base;    //机械臂末端相对于基座
+      Eigen::Isometry3d T_end_to_base;    //机械臂末端相对于基座,只在一开始获取位姿的时候用
 
-      Eigen::Isometry3d T_head_to_arm;    //头部坐标系相对于相机
+      Eigen::Isometry3d T_head_to_cam;    //头部坐标系相对于相机
+
+      Eigen::Isometry3d T_illpoint_to_head;    //病灶点相对头部坐标系
+
+      Eigen::Isometry3d T_illpoint_to_base;    //病灶点相对机械臂基座
 
       Eigen::Vector3d head_X_inCam,head_Y_inCam,head_Z_inCam,head_ori;
 
@@ -89,9 +88,9 @@ class Track_head
 
       std::vector<Eigen::Vector3d> coordinate_point_3d;
 
-      Eigen::Vector4d nose1_ur5,nose2_ur5;
+      //Eigen::Vector4d nose1_ur5,nose2_ur5;
 
-      Eigen::Vector4d target_nose1,target_nose2;
+      //Eigen::Vector4d target_nose1,target_nose2;
 
 
     public:
@@ -105,7 +104,7 @@ class Track_head
 
        void Init_Dlib(void);
 
-       void detect_face(cv::Mat& color_in,cv::Mat& depth_in);
+       bool detect_face(cv::Mat& color_in,cv::Mat& depth_in);
 
        void show_clicked_3d_infor(cv::Mat &color, cv::Mat depth);
 
@@ -113,9 +112,11 @@ class Track_head
 
        void get_Head_Coordinate(void);
 
-       void track_head(double speed, Eigen::Vector4d &target);
+       void track_head(double *target);
 
-       void setup_coordinate(double ur5_Px,double ur5_Py,double ur5_Pz,double ur5_Rx,double ur5_Ry,double ur5_Rz);
+       void get_end_to_base(double ur5_Px,double ur5_Py,double ur5_Pz,double ur5_Rx,double ur5_Ry,double ur5_Rz);
+
+       void get_illpoint_to_head(void);
 
 };
 
