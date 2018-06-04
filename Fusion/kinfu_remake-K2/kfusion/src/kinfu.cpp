@@ -204,12 +204,10 @@ bool kfusion::KinFu::operator()(const kfusion::cuda::Depth& depth, const kfusion
             return reset(), false;
     }
 
+    //affine:当前帧相对于上一帧,poses_.back():上一帧相对于全局
     poses_.push_back(poses_.back() * affine); // curr -> global
 
-    ///////////////////////////////////////////////////////////////////////////////////////////
     // Volume integration
-
-    // We do not integrate volume if camera does not move.
     float rnorm = (float)cv::norm(affine.rvec());
     float tnorm = (float)cv::norm(affine.translation());
     bool integrate = (rnorm + tnorm)/2 >= p.tsdf_min_camera_movement;
@@ -219,7 +217,6 @@ bool kfusion::KinFu::operator()(const kfusion::cuda::Depth& depth, const kfusion
         volume_->integrate(dists_, poses_.back(), p.intr);
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////
     // Ray casting
     {
         //ScopeTime time("ray-cast-all");

@@ -38,7 +38,7 @@ struct kfusion::cuda::ProjectiveICP::StreamHelper
     StreamHelper() { cudaSafeCall( cudaStreamCreate(&stream) ); }
     ~StreamHelper() { cudaSafeCall( cudaStreamDestroy(stream) ); }
 
-    operator float*() { return locked_buffer.data; }
+    operator float*() { return locked_buffer.data; }     //类型转换操作符,https://blog.csdn.net/infoworld/article/details/38901127
     operator cudaStream_t() { return stream; }
 
     Mat6f get(Vec6f& b)

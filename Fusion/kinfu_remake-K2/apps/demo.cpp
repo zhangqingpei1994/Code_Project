@@ -105,8 +105,8 @@ struct KinFuApp
             kinfu.renderImage(view_device_, viz.getViewerPose(), mode);
         else
         {
-            kinfu.renderImage(view_device_, mode);
-            //std::cout<<"000"<<std::endl;
+            kinfu.renderImage(view_device_, mode);   //这句话在执行
+
         }
 
         view_host_.create(view_device_.rows(), view_device_.cols(), CV_8UC4);  //view_host_是Mat类型
@@ -120,6 +120,7 @@ struct KinFuApp
         cv::Mat cloud_host(1, (int)cloud.size(), CV_32FC4);   //1行
         cloud.download1(cloud_host.ptr<Point>());
         viz.showWidget("cloud", cv::viz::WCloud(cloud_host));
+        std::cout<<"take cloud"<<std::endl;
 
         /**************************************************************/
         /**********                                          **********/
@@ -157,7 +158,7 @@ struct KinFuApp
         KinFu& kinfu = *kinfu_;              //kinfu_在构造函数中进行了初始化，就是创建了一个类，并以默认的KinFuParams作为参数创建的
         cv::Mat depth, image,depth_ori,image_ori;
         double time_ms = 0;
-        bool has_image = false;
+        bool has_image = true;
 
         grab_kinect2.Initial_KinectV2_driver();
 
@@ -167,8 +168,8 @@ struct KinFuApp
 
             grab_kinect2.Grab_image_KinectV2(image,depth,image_ori,depth_ori);
 
-            cv::imshow("kinect2",image);
-            cv::waitKey(2);
+            //cv::imshow("kinect2",image);
+            //cv::waitKey(2);
 
             //这个函数最后goto到device_memory.cpp的upload函数,主要功能是从CPU拷贝二维数组到GPU上,存到了DeviceMemory2D的×data中 --
             depth_device_.upload(depth.data, depth.step, depth.rows, depth.cols);   //depth_device_：DeviceArray2D<unsigned short> -- depth.step:一行的字节数
@@ -182,8 +183,8 @@ struct KinFuApp
             if (has_image)
                 show_raycasted(kinfu);
 
-            show_depth(depth);
-            cv::imshow("Image", image);
+            //show_depth(depth);
+            //cv::imshow("Image", image);
 
             if (!iteractive_mode_)
                 viz.setViewerPose(kinfu.getCameraPose());
@@ -191,7 +192,6 @@ struct KinFuApp
 
 
             int key = cv::waitKey(pause_ ? 0 : 3);
-
             switch(key)
             {
             case 't': case 'T' : take_cloud(kinfu); break;
@@ -202,7 +202,6 @@ struct KinFuApp
 
             viz.spinOnce(3, true);
             viewer->spinOnce(10);
-
         }
 
         return true;
@@ -229,9 +228,6 @@ struct KinFuApp
      struct callback_args cb_args;
 
      Grab_image grab_kinect2;
-
-
-
 
 };
 

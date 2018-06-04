@@ -19,8 +19,8 @@ namespace kfusion
                 CTA_SIZE = CTA_SIZE_X * CTA_SIZE_Y,
 
                 B = 6, COLS = 6, ROWS = 6, DIAG = 6,
-                UPPER_DIAG_MAT = (COLS * ROWS - DIAG) / 2 + DIAG,
-                TOTAL = UPPER_DIAG_MAT + B,
+                UPPER_DIAG_MAT = (COLS * ROWS - DIAG) / 2 + DIAG,   //(6*6-6)/2+6=21
+                TOTAL = UPPER_DIAG_MAT + B,      //21+6=27
 
                 FINAL_REDUCE_CTA_SIZE = 256,
                 FINAL_REDUCE_STRIDE = FINAL_REDUCE_CTA_SIZE
@@ -111,7 +111,7 @@ namespace kfusion
         __kf_device__
         void ComputeIcpHelper::partial_reduce(const float row[7], PtrStep<float>& partial_buf) const
         {
-            volatile __shared__ float smem[Policy::CTA_SIZE];
+            volatile __shared__ float smem[Policy::CTA_SIZE];  //每个block的大小
             int tid = Block::flattenedThreadId ();
 
             float  *pos = partial_buf.data + blockIdx.x + gridDim.x * blockIdx.y;
@@ -411,8 +411,8 @@ void kfusion::device::ComputeIcpHelper::operator()(const Depth& dprev, const Nor
     icp_helper_kernel<<<grid, block, 0, s>>>(*this, buffer);
     cudaSafeCall ( cudaGetLastError () );
 
-    int b = Policy::FINAL_REDUCE_CTA_SIZE;
-    int g = Policy::TOTAL;
+    int b = Policy::FINAL_REDUCE_CTA_SIZE;  //256
+    int g = Policy::TOTAL;                  //27
     icp_final_reduce_kernel<<<g, b, 0, s>>>(buffer, partials_count, buffer.ptr(Policy::TOTAL));
     cudaSafeCall ( cudaGetLastError () );
 
@@ -428,7 +428,7 @@ void kfusion::device::ComputeIcpHelper::operator()(const Points& vprev, const No
     TextureBinder nprev_binder(nprev, nprev_tex);
 
     dim3 block(Policy::CTA_SIZE_X, Policy::CTA_SIZE_Y);     //32*8
-    dim3 grid(divUp ((int)cols, block.x), divUp ((int)rows, block.y));
+    dim3 grid(divUp ((int)cols, block.x), divUp ((int)rows, block.y)); //第一次进来的时候:cols:128   rows:106
 
     int partials_count = (int)(grid.x * grid.y);
     allocate_buffer(buffer, partials_count);
@@ -436,7 +436,7 @@ void kfusion::device::ComputeIcpHelper::operator()(const Points& vprev, const No
     icp_helper_kernel<<<grid, block, 0, s>>>(*this, buffer);
     cudaSafeCall ( cudaGetLastError () );
 
-    int b = Policy::FINAL_REDUCE_CTA_SIZE;
+    int b = Policy::FINAL_REDUCE_CTA_SIZE;   //256
     int g = Policy::TOTAL;
     icp_final_reduce_kernel<<<g, b, 0, s>>>(buffer, partials_count, buffer.ptr(Policy::TOTAL));
     cudaSafeCall ( cudaGetLastError () );
@@ -453,16 +453,17 @@ void kfusion::device::ComputeIcpHelper::allocate_buffer(DeviceArray2D<float>& bu
         const int input_cols = 512;
         const int input_rows = 424;
 
-        int gx = divUp (input_cols, Policy::CTA_SIZE_X);
-        int gy = divUp (input_rows, Policy::CTA_SIZE_Y);
+        int gx = divUp (input_cols, Policy::CTA_SIZE_X);  //gx=16
+        int gy = divUp (input_rows, Policy::CTA_SIZE_Y);  //gy=53
 
-        partials_count = gx * gy;
+        partials_count = gx * gy;                         //848
     }
 
-    int min_rows = Policy::TOTAL + 1;
+    int min_rows = Policy::TOTAL + 1;      //28
+
     int min_cols = max(partials_count, Policy::TOTAL);
 
-    if (buffer.rows() < min_rows || buffer.cols() < min_cols)
+    if (buffer.rows() < min_rows || buffer.cols() < min_cols)  //buffer.rows()=28,buffer.cols()=848  一直
         buffer.create (min_rows, min_cols);
 }
 
