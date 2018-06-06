@@ -88,9 +88,9 @@ class Track_head
 
       std::vector<Eigen::Vector3d> coordinate_point_3d;
 
-      //Eigen::Vector4d nose1_ur5,nose2_ur5;
+      Eigen::Vector4d differ1,differ2;
 
-      //Eigen::Vector4d target_nose1,target_nose2;
+      double Rx_target,Ry_target,Rz_target;
 
 
     public:
@@ -112,11 +112,11 @@ class Track_head
 
        void get_Head_Coordinate(void);
 
-       void track_head(double *target);
+       void track_head(double *target, int type);
 
        void get_end_to_base(double ur5_Px,double ur5_Py,double ur5_Pz,double ur5_Rx,double ur5_Ry,double ur5_Rz);
 
-       void get_illpoint_to_head(void);
+       void get_illpoint_to_head(double *differ111, double *differ222);
 
 };
 

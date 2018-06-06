@@ -12,8 +12,7 @@
 #include<opencv2/highgui/highgui.hpp>
 
 #include <iostream>
-//#include <stdio.h>
-//#include <iomanip>
+
 
 
 class  Grab_image

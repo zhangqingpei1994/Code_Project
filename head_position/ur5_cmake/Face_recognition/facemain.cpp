@@ -6,6 +6,8 @@ int initial=0;
 int numbersele = 0;
 int status=0;
 
+cv::Mat Kinect2_image;
+
 //#include "dir.h"
 //const char *faceCascadeFilename = "lbpcascade_frontalface.xml";     // LBP face detector.
 //const char *faceCascadeFilename = "haarcascade_frontalface_alt_tree.xml";  // Haar face detector.
@@ -237,7 +239,7 @@ void onMouse(int event, int x, int y, int, void*)
         // Otherwise they clicked in the center.
     }
 }
-int onlyrecognized(Ptr<FaceRecognizer> &model,VideoCapture &videoCapture, CascadeClassifier &faceCascade, CascadeClassifier &eyeCascade1, CascadeClassifier &eyeCascade2)
+int onlyrecognized(Ptr<FaceRecognizer> &model, CascadeClassifier &faceCascade, CascadeClassifier &eyeCascade1, CascadeClassifier &eyeCascade2)
 {
     string outputStr;
     double similarity;
@@ -246,8 +248,16 @@ int onlyrecognized(Ptr<FaceRecognizer> &model,VideoCapture &videoCapture, Cascad
     {
         // Grab the next camera frame. Note that you can't modify camera frames.
         Mat cameraFrame;
-        videoCapture >> cameraFrame;
-        if (cameraFrame.empty())
+        //videoCapture >> cameraFrame;
+        Size size;
+        size.height=480;
+        size.width=640;
+        cvtColor(Kinect2_image ,Kinect2_image , CV_RGBA2RGB);
+        resize(Kinect2_image,cameraFrame,size);
+//        cvtColor(cameraFrame,cameraFrame,CV_BGR2GRAY);
+       // waitKey(1);
+
+       if (cameraFrame.empty())
         {
             cout << "ERROR: Couldn't grab the next camera frame." << endl;
             exit(1);
@@ -261,25 +271,30 @@ int onlyrecognized(Ptr<FaceRecognizer> &model,VideoCapture &videoCapture, Cascad
         Rect faceRect;  // Position of detected face.
         Rect searchedLeftEye, searchedRightEye; // top-left and top-right regions of the face, where eyes were searched.
         Point leftEye, rightEye;    // Position of the detected eyes.
-       Mat preprocessedFace = getPreprocessedFace(displayedFrame, faceWidth, faceCascade, eyeCascade1, eyeCascade2, preprocessLeftAndRightSeparately, &faceRect, &leftEye, &rightEye, &searchedLeftEye, &searchedRightEye);//Œì²âµœµÄÈËÁ³²¢ÇÒœøÐÐ·ÂÉä±ä»»Ö®ºó
-
+        Mat preprocessedFace = getPreprocessedFace(displayedFrame, faceWidth, faceCascade, eyeCascade1, eyeCascade2, preprocessLeftAndRightSeparately, &faceRect, &leftEye, &rightEye, &searchedLeftEye, &searchedRightEye);//Œì²âµœµÄÈËÁ³²¢ÇÒœøÐÐ·ÂÉä±ä»»Ö®ºó
+        //imshow("test1",preprocessedFace);
+       // cout<<preprocessedFace.rows;
         bool gotFaceAndEyes = false;
-        if (preprocessedFace.data)
+        if (preprocessedFace.data&&0<preprocessedFace.rows&&preprocessedFace.rows<200)
+        {
             gotFaceAndEyes = true;
+        }
         // Draw an anti-aliased rectangle around the detected face.
         if (faceRect.width > 0)
         {
             rectangle(displayedFrame, faceRect, CV_RGB(255, 255, 110), 2, CV_AA);
-        // Draw light-blue anti-aliased circles for the 2 eyes.
-        Scalar eyeColor = CV_RGB(0, 255, 255);
-        if (leftEye.x >= 0) {   // Check if the eye was detected
-            circle(displayedFrame, Point(faceRect.x + leftEye.x, faceRect.y + leftEye.y), 6, eyeColor, 1, CV_AA);
-        }
-        if (rightEye.x >= 0) {   // Check if the eye was detected
+           // Draw light-blue anti-aliased circles for the 2 eyes.
+           Scalar eyeColor = CV_RGB(0, 255, 255);
+           if (leftEye.x >= 0)
+           {   // Check if the eye was detected
+             circle(displayedFrame, Point(faceRect.x + leftEye.x, faceRect.y + leftEye.y), 6, eyeColor, 1, CV_AA);
+           }
+          if (rightEye.x >= 0)
+          {   // Check if the eye was detected
             circle(displayedFrame, Point(faceRect.x + rightEye.x, faceRect.y + rightEye.y), 6, eyeColor, 1, CV_AA);
+          }
         }
-        }
-
+     //std::cout<<"111111"<<std::endl;
             if (gotFaceAndEyes )
             {
 
@@ -291,18 +306,19 @@ int onlyrecognized(Ptr<FaceRecognizer> &model,VideoCapture &videoCapture, Cascad
 
                 // Verify whether the reconstructed face looks like the preprocessed face, otherwise it is probably an unknown person.
                 similarity = getSimilarity(preprocessedFace, reconstructedFace);
-
                 if (similarity < UNKNOWN_PERSON_THRESHOLD)
                 {
                     // Identify who the person is in the preprocessed face image.
+
                     identity = model->predict(preprocessedFace);
                     outputStr = toString(identity);
-                     cout << "Identity: " << outputStr ;
+                    cout << "Identity: " << outputStr;
                     return identity;
 
                    // break;
                 }
-                else {
+                else
+                {
                     // Since the confidence is low, assume it is an unknown person.
                     outputStr = "Unknown";
                 }
@@ -327,7 +343,8 @@ int onlyrecognized(Ptr<FaceRecognizer> &model,VideoCapture &videoCapture, Cascad
 
         // Show the current preprocessed face in the top-center of the display.
         int cx = (displayedFrame.cols - faceWidth) / 2;
-        if (preprocessedFace.data) {
+        if (preprocessedFace.data&&0<preprocessedFace.rows&&preprocessedFace.rows<200)
+        {
             // Get a BGR version of the face, since the output is BGR color.
             Mat srcBGR = Mat(preprocessedFace.size(), CV_8UC3);
             cvtColor(preprocessedFace, srcBGR, CV_GRAY2BGR);
@@ -371,7 +388,7 @@ int onlyrecognized(Ptr<FaceRecognizer> &model,VideoCapture &videoCapture, Cascad
         // If the user wants all the debug data, show it to them!
 //            if (!model.empty())
 //                showTrainingDebugData(model, faceWidth, faceHeight);
-        char keypress = waitKey(20);  // This is needed if you want to see anything!
+        char keypress = waitKey(30);  // This is needed if you want to see anything!
 
         if (keypress == VK_ESCAPE)
         {   // Escape Key
@@ -691,20 +708,20 @@ int recognized()
     int cameraNumber = 0;   // Change this if you want to use a different camera device.
 
     // Get access to the webcam.
-    initWebcam(videoCapture, cameraNumber);//Žò¿ªÉãÏñÍ·
+    //initWebcam(videoCapture, cameraNumber);//Žò¿ªÉãÏñÍ·
 
     // Try to set the camera resolution. Note that this only works for some cameras on
     // some computers and only for some drivers, so don't rely on it to work!
-    videoCapture.set(CV_CAP_PROP_FRAME_WIDTH, DESIRED_CAMERA_WIDTH);//set·œ·š²»œöÓÃÓÚÈ¡ÊÓÆµÖ¡µÄÎ»ÖÃ£¬»¹¿ÉÒÔÉèÖÃÊÓÆµµÄÖ¡ÂÊ¡¢ÁÁ¶È
-    videoCapture.set(CV_CAP_PROP_FRAME_HEIGHT, DESIRED_CAMERA_HEIGHT);//ÉèÖÃÍŒÏñµÄŽóÐ¡640X480
+    //videoCapture.set(CV_CAP_PROP_FRAME_WIDTH, DESIRED_CAMERA_WIDTH);//set·œ·š²»œöÓÃÓÚÈ¡ÊÓÆµÖ¡µÄÎ»ÖÃ£¬»¹¿ÉÒÔÉèÖÃÊÓÆµµÄÖ¡ÂÊ¡¢ÁÁ¶È
+    //videoCapture.set(CV_CAP_PROP_FRAME_HEIGHT, DESIRED_CAMERA_HEIGHT);//ÉèÖÃÍŒÏñµÄŽóÐ¡640X480
 
     // Create a GUI window for display on the screen.
     namedWindow(windowName); // Resizable window, might not work on Windows.
     // Get OpenCV to automatically call my "onMouse()" function when the user clicks in the GUI window.
-    setMouseCallback(windowName, onMouse, 0);//ÉèÖÃÊó±êµÄÏìÓŠº¯Êý
+   // setMouseCallback(windowName, onMouse, 0);//ÉèÖÃÊó±êµÄÏìÓŠº¯Êý
     //waitKey(500);
     // Run Face Recogintion interactively from the webcam. This function runs until the user quits.
-     return onlyrecognized(model,videoCapture, faceCascade, eyeCascade1, eyeCascade2);
+     return onlyrecognized(model,faceCascade, eyeCascade1, eyeCascade2);
      // cvMoveWindow("windowName",640,480);
       //destroyWindow("windowName");
      //destroyAllWindows();

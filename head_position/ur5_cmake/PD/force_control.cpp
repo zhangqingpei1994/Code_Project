@@ -5,7 +5,8 @@ void PDinitial()
 {
 pdFx.kp=2.33;pdFx.kd=0.3;pdFx.errOld=0;
 pdFy.kp=2.33;pdFy.kd=0.3;pdFy.errOld=0;
-pdFz.kp=1.32;pdFz.kd=0.25;pdFz.errOld=0;
+//pdFz.kp=1.72;pdFz.kd=0.25;pdFz.errOld=0;
+pdFz.kp=1.92;pdFz.kd=0.25;pdFz.errOld=0;
 pdTx.kp=2.68;pdTx.kd=0.45;pdTx.errOld=0;
 pdTy.kp=2.38;pdTy.kd=0.45;pdTy.errOld=0;
 pdTz.kp=2.68;pdTz.kd=0.45;pdTz.errOld=0;
@@ -59,10 +60,10 @@ VectorXd compensation(double Fx,double Fy,double Fz,double Tx,double Ty,double T
        if(dy<-0.03)
            dy=-0.03;
     }
-    if(fabs(Fz)>3)
-    {if(Fz<0)Fz=Fz+3;
+    if(fabs(Fz)>2)
+    {if(Fz<0)Fz=Fz+2;
         else
-        Fz=Fz-3;
+        Fz=Fz-2;
        dz=PDcontrolF(pdFz,Fz);
        dz=dz/1000;
        if(dz>0.035)

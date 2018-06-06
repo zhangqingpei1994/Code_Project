@@ -5,6 +5,7 @@ QString movelpos(double x, double y, double z, double Rx, double Ry, double Rz, 
 
     QString strInstruct=QString("wp1=p[%1,%2,%3,%4,%5,%6]\n\t").arg(x).arg(y).arg(z).arg(Rx).arg(Ry).arg(Rz);
 
+    //strInstruct+=QString("movel(wp1,a=%1,v=%2,r=0.05)\n\t").arg(a).arg(v);
     strInstruct+=QString("movel(wp1,a=%1,v=%2)\n\t").arg(a).arg(v);
 
     if(strInstruct.right(1).toLatin1() != "\n")

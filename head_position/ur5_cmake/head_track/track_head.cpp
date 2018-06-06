@@ -94,7 +94,7 @@ void Track_head::Detect_facial_points(cv::Mat & color)
       coordinate_point_2d.push_back(cv::Point(shape.part(42).x(), shape.part(42).y()));
       coordinate_point_2d.push_back(cv::Point(shape.part(45).x(), shape.part(45).y()));
 
-      std::cout<<"coordinate_point_2d.size: "<<coordinate_point_2d.size()<<std::endl;
+      //std::cout<<"coordinate_point_2d.size: "<<coordinate_point_2d.size()<<std::endl;
 
     }
 }
@@ -145,7 +145,7 @@ bool Track_head::detect_face(cv::Mat& color_in,cv::Mat& depth_in)
 
         /*const std::string window_name = "color viewer";
         cv::namedWindow(window_name,2);
-        cv::setMouseCallback(window_name, onMouse_click, nullptr);    // 注册鼠标回调函数, 第三个参数是C++11中的关键字, 若不支持C++11, 替换成NULL
+        cv::setMouseCallback(window_name, onMouse_click, nullptr);    //注册鼠标回调函数,第三个参数是C+11的关键字, 若不支持, 替换成NULL
         show_clicked_3d_infor(color_in,depth_in);
         cv::imshow(window_name, color_in);
         cv::waitKey(1);
@@ -203,31 +203,60 @@ void Track_head::get_Head_Coordinate(void)
            T_head_to_cam(i,3)=head_ori(i,0);
          }
 
-         std::cout<<"head to cam: "<<std::endl<<T_head_to_cam.matrix()<<std::endl;
+         //std::cout<<"head to cam: "<<std::endl<<T_head_to_cam.matrix()<<std::endl;
 
      }
 }
 
-void Track_head::track_head( double *target)
+void Track_head::track_head( double *target,int type)
 {
       get_Head_Coordinate();
 
-      T_illpoint_to_base= cam_to_armbase * T_head_to_cam* T_illpoint_to_head ;
+      if(type==1)
+      {
+          T_illpoint_to_base= cam_to_armbase * T_head_to_cam* T_illpoint_to_head ;
 
-      std::cout<<"T_illpoint_to_base:"<<std::endl<<T_illpoint_to_base.matrix()<<std::endl;
+          std::cout<<"T_illpoint_to_base:"<<std::endl<<T_illpoint_to_base.matrix()<<std::endl;
 
-      cv::Mat R_matrix = (cv::Mat_<double>(3,3) << T_illpoint_to_base(0,0),  T_illpoint_to_base(0,1),  T_illpoint_to_base(0,2),
+          cv::Mat R_matrix = (cv::Mat_<double>(3,3) << T_illpoint_to_base(0,0),  T_illpoint_to_base(0,1),  T_illpoint_to_base(0,2),
                                                    T_illpoint_to_base(1,0),  T_illpoint_to_base(1,1),  T_illpoint_to_base(1,2),
                                                    T_illpoint_to_base(2,0),  T_illpoint_to_base(2,1),  T_illpoint_to_base(2,2));
-      cv::Mat R_vec;
-      cv::Rodrigues(R_matrix, R_vec);
+          cv::Mat R_vec;
+          cv::Rodrigues(R_matrix, R_vec);
 
-      target[0]=T_illpoint_to_base(0,3);
-      target[1]=T_illpoint_to_base(1,3);
-      target[2]=T_illpoint_to_base(2,3);
-      target[3]=R_vec.at<double>(0,0);
-      target[4]=R_vec.at<double>(1,0);
-      target[5]=R_vec.at<double>(2,0);
+          target[0]=T_illpoint_to_base(0,3);
+          target[1]=T_illpoint_to_base(1,3);
+          target[2]=T_illpoint_to_base(2,3);
+      }
+      else
+      {
+         Eigen::Vector4d nose1_cam,nose2_cam,nose1_ur5,nose2_ur5;
+
+         for(int i=0;i<3;i++)
+         {
+            nose1_cam(i,0)= coordinate_point_3d[0](i,0);
+            nose2_cam(i,0)= coordinate_point_3d[3](i,0);
+         }
+         nose1_cam(3,0)= 1;
+         nose2_cam(3,0)= 1;
+
+
+
+         nose1_ur5= cam_to_armbase*nose1_cam;
+         nose2_ur5= cam_to_armbase*nose2_cam;
+
+         target[0]=(nose1_ur5(0,0)-differ1(0,0)+nose2_ur5(0,0)-differ2(0,0))/2.0;
+         target[1]=(nose1_ur5(1,0)-differ1(1,0)+nose2_ur5(1,0)-differ2(1,0))/2.0;
+         target[2]=(nose1_ur5(2,0)-differ1(2,0)+nose2_ur5(2,0)-differ2(2,0))/2.0;
+
+
+      }
+      //target[3]=R_vec.at<double>(0,0);
+      //target[4]=R_vec.at<double>(1,0);
+      //target[5]=R_vec.at<double>(2,0);
+      target[3]=Rx_target;
+      target[4]=Ry_target;
+      target[5]=Rz_target;
 }
 
 
@@ -242,15 +271,50 @@ void Track_head::get_end_to_base(double ur5_Px,double ur5_Py,double ur5_Pz,doubl
     T_end_to_base.prerotate(r);
     T_end_to_base.pretranslate(Eigen::Vector3d(ur5_Px,ur5_Py,ur5_Pz));
 
+    Rx_target=ur5_Rx;
+    Ry_target=ur5_Ry;
+    Rz_target=ur5_Rz;
 }
 
-void Track_head::get_illpoint_to_head(void)
+void Track_head::get_illpoint_to_head(double *differ111,double *differ222)
 {
       get_Head_Coordinate();
 
-      T_illpoint_to_head= T_head_to_cam.inverse() * armbase_to_cam *T_end_to_base;
+      //T_illpoint_to_head= T_head_to_cam.inverse() * armbase_to_cam *T_end_to_base;
 
-      std::cout<<"illpoint_to_head: "<<std::endl<<T_illpoint_to_head.matrix()<<std::endl;
+      //std::cout<<"illpoint_to_head: "<<std::endl<<T_illpoint_to_head.matrix()<<std::endl;
+
+      Eigen::Vector4d nose1_cam,nose2_cam,nose1_ur5,nose2_ur5;
+      for(int i=0;i<3;i++)
+      {
+         nose1_cam(i,0)= coordinate_point_3d[0](i,0);
+         nose2_cam(i,0)= coordinate_point_3d[3](i,0);
+      }
+      nose1_cam(3,0)= 1;
+      nose2_cam(3,0)= 1;
+
+      nose1_ur5= cam_to_armbase*nose1_cam;
+      nose2_ur5= cam_to_armbase*nose2_cam;
+
+      for(int i=0;i<3;i++)
+      {
+          differ1(i,0)=nose1_ur5(i,0)-T_end_to_base(i,3);
+          differ2(i,0)=nose2_ur5(i,0)-T_end_to_base(i,3);
+      }
+
+      differ1(3,0)=1.0;
+      differ2(3,0)=1.0;
+
+      std::cout<<"differ1:"<<differ1(0,0)<<"  "<<differ1(1,0)<<"  "<<differ1(2,0)<<std::endl;
+      std::cout<<"differ2:"<<differ2(0,0)<<"  "<<differ2(1,0)<<"  "<<differ2(2,0)<<std::endl;
+
+      differ111[0]=differ1(0,0);
+      differ111[1]=differ1(1,0);
+      differ111[2]=differ1(2,0);
+
+      differ222[0]=differ2(0,0);
+      differ222[1]=differ2(1,0);
+      differ222[2]=differ2(2,0);
 
 }
 

@@ -10,8 +10,8 @@ QString strInstruct;//存储控制的姿态字符串
 double targetjoint[6];
 double *sensor_measure;
 //ARToolKitPlus::TrackerSingleMarker tracker(640,480,8, 6, 6, 6, 0);
-ARToolKitPlus::TrackerSingleMarker tracker(1920,1080,8, 6, 6, 6, 0);
-int j=0,m=0,move_l=1;
+ARToolKitPlus::TrackerSingleMarker tracker(1280,720,8, 6, 6, 6, 0);
+int j=0,m=0,move_l=1,position=0;
 double Fz_current;
 bool first_last=false;
 MatrixXd state_change(4,4);
@@ -19,6 +19,7 @@ MatrixXd endT(4,4);
 MatrixXd robot_camera(4,4);
 CvANN_MLP bp;
 Vector3d last_time;
+double old_position[6];
 /*.............手眼矩阵操作*/
 double camere_arm[16]={-0.8825,-0.47018,-0.011119,0.24744,-0.018058,0.010249,-0.99978,0.51586,-0.46997,0.88251,0.017536,1.2445,0,0,0,1};//以行存储
 double ft[6];
@@ -47,7 +48,7 @@ MainWindow::MainWindow(QWidget *parent) :
    // connect(&thread, SIGNAL(sandsignal(double *)), this, SLOT(DisplayMsg(double*)),Qt::DirectConnection);
    // connect(&thread, SIGNAL(signal(QString)), this, SLOT(Move(QString)));
     //connect( this,SIGNAL(tcp2(int)), &thread, SLOT(tcp2connect(int)));
-    ui->line_Host->setText(QString("192.168.1.103"));
+    ui->line_Host->setText(QString("192.168.1.105"));
     ui->line_port->setText(QString("30003"));
     ui->Pos_control->setEnabled(false);
     ui->Joint_control->setEnabled(false);
@@ -64,10 +65,10 @@ void MainWindow::on_Open_Video_clicked()
     if (capture.isOpened())
        capture.release();     //decide if capture is already opened; if so,close it
     capture.open(0);           //open the default camera
-    capture.set(CV_CAP_PROP_FRAME_WIDTH, 1920);//set·œ·š²»œöÓÃÓÚÈ¡ÊÓÆµÖ¡µÄÎ»ÖÃ£¬»¹¿ÉÒÔÉèÖÃÊÓÆµµÄÖ¡ÂÊ¡¢ÁÁ¶È
-    capture.set(CV_CAP_PROP_FRAME_HEIGHT, 1080);//ÉèÖÃÍŒÏñµÄŽóÐ¡640X480
+    capture.set(CV_CAP_PROP_FRAME_WIDTH, 640);//set·œ·š²»œöÓÃÓÚÈ¡ÊÓÆµÖ¡µÄÎ»ÖÃ£¬»¹¿ÉÒÔÉèÖÃÊÓÆµµÄÖ¡ÂÊ¡¢ÁÁ¶È
+    capture.set(CV_CAP_PROP_FRAME_HEIGHT, 480);//ÉèÖÃÍŒÏñµÄŽóÐ¡640X480
        //sleep(10);
-    video_timer->start(80);
+    video_timer->start(100);
     if (capture.isOpened())
     {
          capture >> frame;
@@ -97,8 +98,8 @@ void MainWindow::readcamera_Frame()
           //  qDebug()<<frame.rows;
         if (!frame.empty())
         {
-            init_traker(&tracker,100);//二维码检测
-            get_visual_pose(frame,&frame,&tracker);
+           // init_traker(&tracker,100);//二维码检测
+           // get_visual_pose(frame,&frame,&tracker);
             image = Mat2QImage(frame);
              // qDebug()<<image.size();
             Map<MatrixXd> dymMat(tool_Position,4,4);//按列排布
@@ -228,99 +229,175 @@ void MainWindow::robotstate_change()
     ui->tool_speed4->setText(QString::number(q_actual[21], 6, 4));
     ui->tool_speed5->setText(QString::number(q_actual[22], 6, 4));
     ui->tool_speed6->setText(QString::number(q_actual[23], 6, 4));
+    //qDebug()<<"Fz";
 /*...........二维码跟踪控制......*/
     if(m==1)
     {
         double new_position[6];
-        automation_track(new_position);
         double error[6];
-        error[0]=fabs(new_position[0]-q_actual[12]);
-        error[1]=fabs(new_position[1]-q_actual[13]);
-        error[2]=fabs(new_position[2]-q_actual[14]);
-        error[3]=fabs(new_position[3]-q_actual[15]);
-        error[4]=fabs(new_position[4]-q_actual[16]);
-        error[5]=fabs(new_position[5]-q_actual[17]);
-        //qDebug()<<"come in";
-        if(error[0]<0.01&&error[1]<0.01&&error[2]<0.01&&error[3]<0.1&&error[4]<0.1&&error[5]<0.1)
+        double Fz;
+        double translate[9];
+        double q[6] = { q_actual[0]*3.14 / 180, q_actual[1]*3.14 / 180, q_actual[2]*3.14 / 180, q_actual[3]*3.14 / 180, q_actual[4]*3.14 / 180, q_actual[5]*3.14 / 180 };
+        double T[16];
+        forward(q, T);
+        double T02 = -T[0];  double T00 = T[1];  double T01 = T[2];
+        double T12 = -T[4]; double T10 = T[5]; double T11 = T[6];
+        double T22 = T[8]; double T20 = -T[9]; double T21 = -T[10];
+        translate[0]=T00;translate[1]=T01;translate[2]=T02;translate[3]=T10;
+        translate[4]=T11;translate[5]=T12;translate[6]=T20;translate[7]=T21;
+        translate[8]=T22;
+        Map<MatrixXd> dymMat(translate,3,3);//以列存储
+        automation_track(new_position);
+/*..............采数据专用......................*/
+        double real_state[16];
+        real_state[0]=T00;real_state[1]=T01;real_state[2]=T02;real_state[3]=-T[3];
+        real_state[4]=T10;real_state[5]=T11;real_state[6]=T12;real_state[7]=-T[7];
+        real_state[8]=T20;real_state[9]=T21;real_state[10]=T22;real_state[11]=T[11];
+        real_state[12]=0;real_state[13]=0;real_state[14]=0;real_state[15]=1;
+        Map<MatrixXd>  robot__translate(real_state,4,4);
+        MatrixXd robot__to_marker(4,4);
+        Map<MatrixXd> camera_state(tool_Position,4,4);
+        MatrixXd marker_in_robot(4,4);
+        robot__to_marker=robot__translate.transpose()*endT*state_change;
+        marker_in_robot=robot_camera.inverse()*camera_state;
+
+        AngleAxisd V3;
+        Matrix3d T2;
+        Vector3d last;
+        double robot_marker[6];
+        double marker_in[6];
+        for (int i = 0; i <  3; i++)
         {
-            Mat sample(1,6,CV_32FC1);
-            Mat response;
+             for(int j = 0; j <  3; j++)
+               {
+                  T2(i,j)=robot__to_marker(i,j);
+               }
+         }
+
+       V3.fromRotationMatrix(T2);
+       last=V3.axis()*V3.angle();
+       robot_marker[0]=robot__to_marker(0,3);
+       robot_marker[1]=robot__to_marker(1,3);
+       robot_marker[2]=robot__to_marker(2,3);
+       robot_marker[3]=last(0);
+       robot_marker[4]=last(1);
+       robot_marker[5]=last(2);
+       for (int i = 0; i <  3; i++)
+       {
+            for(int j = 0; j <  3; j++)
+              {
+                 T2(i,j)=marker_in_robot(i,j);
+              }
+        }
+
+      V3.fromRotationMatrix(T2);
+      last=V3.axis()*V3.angle();
+      marker_in[0]=marker_in_robot(0,3);
+      marker_in[1]=marker_in_robot(1,3);
+      marker_in[2]=marker_in_robot(2,3);
+      marker_in[3]=last(0);
+      marker_in[4]=last(1);
+      marker_in[5]=last(2);
+     // qDebug()<<robot_marker[0]<<" "<<robot_marker[1]<<" "<<robot_marker[2]<<" "<<robot_marker[3]<<" "<<robot_marker[4]<<" "<<robot_marker[5];
+      //qDebug()<<marker_in[0]<<" "<<marker_in[1]<<" "<<marker_in[2]<<" "<<marker_in[3]<<" "<<marker_in[4]<<" "<<marker_in[5];
+/*..............采数据专用......................*/
+       if(position==0)
+       {
+
+            for(int i=0;i<6;i++)
+            {
+                old_position[i]=new_position[i];
+               // qDebug()<<"old"<<old_position[i];
+               // qDebug()<<"new"<<new_position[i];
+            }
+
+            position=1;
+        }
+        error[0]=fabs(new_position[0]-old_position[0]);
+        error[1]=fabs(new_position[1]-old_position[1]);
+        error[2]=fabs(new_position[2]-old_position[2]);
+        error[3]=fabs(new_position[3]-old_position[3]);
+        error[4]=fabs(new_position[4]-old_position[4]);
+        error[5]=fabs(new_position[5]-old_position[5]);
+        sensor_measure=force_measure();
+        if(move_l==1)
+        {
+            Fz_current=(*(sensor_measure+2))/10;
+        }
+        //bp[0]=20*response.at<float>(0,0);bp[1]=response.at<float>(0,1)*20;bp[2]=response.at<float>(0,2)*20;bp[3]=response.at<float>(0,3)*1.2;bp[4]=response.at<float>(0,4)*1.2;bp[5]=response.at<float>(0,5)*1.2;
+        Fz=(*(sensor_measure+2))/10;
+        Fz=Fz-Fz_current+5;
+/*......................二维码跟踪数据采集............................*/
+//        QFile data("/home/zhang/brain_share/brain_robot/linzecai/ur5_cmake/facexml/robot.txt");
+//        if (data.open(QFile::WriteOnly | QIODevice::Append))
+//        {
+
+//            QTextStream out(&data);
+//            out <<robot_marker[0]<<","<<robot_marker[1]<<","<<robot_marker[2]<<","<<robot_marker[3]<<","<<robot_marker[4]<<","<<robot_marker[5]<<endl;
+//        }
+//        QFile data1("/home/zhang/brain_share/brain_robot/linzecai/ur5_cmake/facexml/marker.txt");
+//        if (data1.open(QFile::WriteOnly | QIODevice::Append))
+//        {
+
+//            QTextStream out1(&data1);
+//            out1 <<marker_in[0]<<","<<marker_in[1]<<","<<marker_in[2]<<","<<marker_in[3]<<","<<marker_in[4]<<","<<marker_in[5]<<","<<endl;
+//        }
+//        QFile data2("/home/zhang/brain_share/brain_robot/linzecai/ur5_cmake/facexml/force_z.txt");
+//        if (data2.open(QFile::WriteOnly | QIODevice::Append))
+//        {
+
+//            QTextStream out2(&data2);
+//            out2 <<Fz<<endl;
+//        }
+ /*......................二维码跟踪数据采集............................*/
+
+        if(error[0]<0.015&&error[1]<0.015&&error[2]<0.015&&error[3]<0.1&&error[4]<0.1&&error[5]<0.1)
+        {
             VectorXd Vd(6);//末端坐标系
             Vector3d v1;
             Vector3d v11;
-            double translate[9];
-            double q[6] = { q_actual[0]*3.14 / 180, q_actual[1]*3.14 / 180, q_actual[2]*3.14 / 180, q_actual[3]*3.14 / 180, q_actual[4]*3.14 / 180, q_actual[5]*3.14 / 180 };
-            double T[16];
-            forward(q, T);
-            double T02 = -T[0];  double T00 = T[1];  double T01 = T[2];
-            double T12 = -T[4]; double T10 = T[5]; double T11 = T[6];
-            double T22 = T[8]; double T20 = -T[9]; double T21 = -T[10];
-            translate[0]=T00;translate[1]=T01;translate[2]=T02;translate[3]=T10;
-            translate[4]=T11;translate[5]=T12;translate[6]=T20;translate[7]=T21;
-            translate[8]=T22;
-            Map<MatrixXd> dymMat(translate,3,3);//以列存储
-            for(int i=0;i<6;i++)
-            {
-                 sample.at<float>(0,i)=q_actual[i];
-                 // qDebug()<<q_actual[i];
-            }
 
-            //bp.predict(sample,response);
-            //response = response / 1.63;
-            double Fz;
-            if(move_l==1)
-                Fz_current==(*(sensor_measure+2))/10;
-            //bp[0]=20*response.at<float>(0,0);bp[1]=response.at<float>(0,1)*20;bp[2]=response.at<float>(0,2)*20;bp[3]=response.at<float>(0,3)*1.2;bp[4]=response.at<float>(0,4)*1.2;bp[5]=response.at<float>(0,5)*1.2;
-            sensor_measure=force_measure();
-            Fz=(*(sensor_measure+2))/10;
-            Fz=Fz-Fz_current+5;
-            qDebug()<<"Fz"<<Fz;
             Vd=compensation(0,0,Fz,0,0,0);
             v1[0]=0;v1[1]=0;v1[2]=Vd[2];
+            //qDebug()<<"Fz"<<Fz<<"Fz_curren"<<Fz_current<<"Z"<<Vd(2);
             v11=dymMat.transpose()*v1;
+            qDebug()<<"Fz"<<Fz<<"Fz_curren"<<Fz_current<<"Z"<<Vd(2)<<"REAL z"<<v11[2];
             new_position[0]=q_actual[12]+v11[0];
             new_position[1]=q_actual[13]+v11[1];
             new_position[2]=q_actual[14]+v11[2];
             new_position[3]=q_actual[15];
             new_position[4]=q_actual[16];
             new_position[5]=q_actual[17];
-            move_l=0;
             if(fabs(v11[0])<0.035&&fabs(v11[1])<0.035&&fabs(v11[2])<0.035)
             {
 
-                if((fabs(q_actual[18])<0.001)&&(fabs(q_actual[19])<0.001)&&(fabs(q_actual[20])<0.001)&&(fabs(q_actual[21])<0.001)&&(fabs(q_actual[22])<0.001)&&(fabs(q_actual[23])<0.001))
-                {
-                // qDebug()<<
-                    strInstruct=movelpos(new_position[0],new_position[1],new_position[2],new_position[3],new_position[4],new_position[5],0.1,0.05);
-                    int write_byte=tcpClient->write(strInstruct.toLatin1(),strInstruct.length());//toLatin1(); 将QString转为char
-                    qDebug()<<strInstruct<<";"<<write_byte;
-                    bool ifwritten=tcpClient->waitForBytesWritten();
-                }
+//                if((fabs(q_actual[18])<0.01)&&(fabs(q_actual[19])<0.01)&&(fabs(q_actual[20])<0.01)&&(fabs(q_actual[21])<0.01)&&(fabs(q_actual[22])<0.01)&&(fabs(q_actual[23])<0.01))
+//                {
+//                // qDebug()<<
+//                    strInstruct=movelpos(new_position[0],new_position[1],new_position[2],new_position[3],new_position[4],new_position[5],0.1,0.05);
+//                    int write_byte=tcpClient->write(strInstruct.toLatin1(),strInstruct.length());//toLatin1(); 将QString转为char
+//                    qDebug()<<strInstruct<<";"<<write_byte;
+//                    bool ifwritten=tcpClient->waitForBytesWritten();
+//                    move_l=0;
+//                    for(int i=0;i<6;i++)
+//                        old_position[i]=new_position[i];
+//                }
             }
          }
-        else if(error[0]<0.15&&error[1]<0.15&&error[2]<0.15&&error[3]<1.5&&error[4]<1.5&&error[5]<1.5)
+        else if(error[0]<0.15&&error[1]<0.15&&error[2]<0.15&&error[3]<1&&error[4]<1&&error[5]<1)
          {
-//            if(error[0]>0.1)
-//                new_position[0]=q_actual[12]+0.1;
-//            if(error[1]>0.1)
-//                new_position[1]=q_actual[13]+0.1;
-//            if(error[2]>0.1)
-//                new_position[2]=q_actual[14]+0.1;
-//            if(error[3]>1)
-//                new_position[3]=q_actual[15]+0.5;
-//            if(error[4]>1)
-//                new_position[4]=q_actual[16]+0.5;
-//            if(error[5]>1)
-//                new_position[5]=q_actual[17]+0.5;
-            if((fabs(q_actual[18])<0.001)&&(fabs(q_actual[19])<0.001)&&(fabs(q_actual[20])<0.001)&&(fabs(q_actual[21])<0.001)&&(fabs(q_actual[22])<0.001)&&(fabs(q_actual[23])<0.001))
+
+            if((fabs(q_actual[18])<0.01)&&(fabs(q_actual[19])<0.01)&&(fabs(q_actual[20])<0.01)&&(fabs(q_actual[21])<0.01)&&(fabs(q_actual[22])<0.01)&&(fabs(q_actual[23])<0.01))
             {
                // qDebug()<<
-                strInstruct=movelpos(new_position[0],new_position[1],new_position[2],new_position[3],new_position[4],new_position[5],0.1,0.05);
+                strInstruct=movelpos(new_position[0],new_position[1],new_position[2],new_position[3],new_position[4],new_position[5],0.1,0.08);
                 int write_byte=tcpClient->write(strInstruct.toLatin1(),strInstruct.length());//toLatin1(); 将QString转为char
                 qDebug()<<strInstruct<<";"<<write_byte;
                 bool ifwritten=tcpClient->waitForBytesWritten();
                 move_l=1;
-            }
+                for(int i=0;i<6;i++)
+                    old_position[i]=new_position[i];
+           }
         }
         else
         {
@@ -406,11 +483,11 @@ void MainWindow::on_openforce_clicked()
     }
     //bp1.load("/home/linzc/QT-workspace/untitled_test_2/bp_nn/bp_param.xml");
     PDinitial();
-    robot_timer->stop();
-    waitKey(500);
-   if (!thread.isRunning())
-     thread.ifopen=ifopen;
-    thread.start();
+//    robot_timer->stop();
+//    waitKey(500);
+//   if (!thread.isRunning())
+//     thread.ifopen=ifopen;
+//    thread.start();
 
 }
 /*............ 关闭力控制.............*/
@@ -444,7 +521,7 @@ void MainWindow::on_closeforce_clicked()
 
     ui->openforce->setEnabled(true);
   //forcecontrol_timer->stop();
-    robot_timer->start(100);
+    robot_timer->start(200);
     close_sensor();
     thread.terminate();
 
@@ -457,11 +534,17 @@ void MainWindow::on_pushButton_clicked()
 /*............ 患者人脸识别.............*/
 void MainWindow::on_pushButton_2_clicked()
 {
+    Kinect2_FaceRecog=new QTimer(this);
+    connect(Kinect2_FaceRecog,SIGNAL(timeout()),this,SLOT(readKinect2_Frame()));
+    Kinect2_FaceRecog->start(70);
+    grab_kinect2.Grab_image_KinectV2(rgb_corrected,depth_corrected,rgb_ori,depth_ori);
+    rgb_ori.copyTo(Kinect2_image);
+
     int identity;
     identity=recognized();
 
     QString id= QString::number(identity, 10);
-    QString filename="../facexml/";
+    QString filename="/home/zhang/brain_share/brain_robot/linzecai/ur5_cmake/facexml/";
     filename+=id+ "/" + id+".txt";
     // filename = QFileDialog :: getOpenFileName(this,NULL,NULL,filename1);
     QFile file(filename);
@@ -475,12 +558,21 @@ void MainWindow::on_pushButton_2_clicked()
         //---QtextEdit按行显示文件内容
         ui->patient_data->setPlainText(in.readAll());
     }
-    filename="../facexml/";
+    filename="/home/zhang/brain_share/brain_robot/linzecai/ur5_cmake/facexml/";
     filename+=id+ "/" + id+".jpg";
     QPixmap pixmap(filename);
     ui->patien_jpg->setPixmap(pixmap);
     ui->patien_jpg->show();
+
+
 }
+
+void MainWindow::readKinect2_Frame()
+{
+    grab_kinect2.Grab_image_KinectV2(rgb_corrected,depth_corrected,rgb_ori,depth_ori);
+    rgb_ori.copyTo(Kinect2_image);
+}
+
 /*............ 自动跟踪函数.............*/
 void  MainWindow::automation_track(double *track_positon)
 {
@@ -493,23 +585,23 @@ void  MainWindow::automation_track(double *track_positon)
 //    camera_state(2,3)=tool_Position[14];
       AngleAxisd V3;
       Matrix3d T2;
-      for (int i = 0; i <  3; i++)
-      {
-          for(int j = 0; j <  3; j++)
-          {
-              T2(i,j)=camera_state(i,j);
-          }
-      }
-      V3.fromRotationMatrix(T2);
+//      for (int i = 0; i <  3; i++)
+//      {
+//          for(int j = 0; j <  3; j++)
+//          {
+//              T2(i,j)=camera_state(i,j);
+//          }
+//      }
+//      V3.fromRotationMatrix(T2);
       Vector3d last;
-      last=V3.axis()*V3.angle();
-      if(!first_last)
-      {
-         last_time=last;
-         first_last=true;
-      }
-     qDebug()<<"artoolrx";
-     qDebug()<<last(0)<<" "<<last(1)<<" "<<last(2)<<endl;
+//      last=V3.axis()*V3.angle();
+//      if(!first_last)
+//      {
+//         last_time=last;
+//         first_last=true;
+//      }
+//     qDebug()<<"artoolrx";
+//     qDebug()<<last(0)<<" "<<last(1)<<" "<<last(2)<<endl;
      MatrixXd robot_real(4,4);
      MatrixXd robot_matrix(4,4);
      MatrixXd robot_calcu(4,4);
@@ -522,15 +614,15 @@ void  MainWindow::automation_track(double *track_positon)
          *track_positon=q_actual[16];track_positon++;
          *track_positon=q_actual[17];
      }
-     else if(last_time(0)-last(0)>0.05||last_time(1)-last(1)>0.05||last_time(2)-last(2)>0.05)
-     {
-         *track_positon=q_actual[12];track_positon++;
-         *track_positon=q_actual[13];track_positon++;
-         *track_positon=q_actual[14];track_positon++;
-         *track_positon=q_actual[15];track_positon++;
-         *track_positon=q_actual[16];track_positon++;
-         *track_positon=q_actual[17];track_positon++;
-     }
+//     else if(last_time(0)-last(0)>0.05||last_time(1)-last(1)>0.05||last_time(2)-last(2)>0.05)
+//     {
+//         *track_positon=q_actual[12];track_positon++;
+//         *track_positon=q_actual[13];track_positon++;
+//         *track_positon=q_actual[14];track_positon++;
+//         *track_positon=q_actual[15];track_positon++;
+//         *track_positon=q_actual[16];track_positon++;
+//         *track_positon=q_actual[17];
+//     }
      else
      {
      robot_calcu=robot_camera.inverse()*camera_state;
@@ -553,7 +645,7 @@ void  MainWindow::automation_track(double *track_positon)
      *track_positon=last(1);track_positon++;
      *track_positon=last(2);
      }
-     last_time=last;
+     //last_time=last;
 
 }
 /*............ 数据采集专用及手眼标定设置.............*/
@@ -691,10 +783,16 @@ void MainWindow::on_pushButton_3_clicked()
 //    robot_camera(3,0)=0;robot_camera(3,1)=0;robot_camera(3,2)=0;robot_camera(3,3)=1;
 /*.................1920x1080.....................................*/
     robot_camera(0,0)=0.9846;robot_camera(0,1)=0.16752;robot_camera(0,2)=0.049983;robot_camera(0,3)=0.20112;
-    robot_camera(1,0)=0.054682;robot_camera(1,1)=-0.02355;robot_camera(1,2)=-0.99823;robot_camera(1,3)=0.52848;
-    robot_camera(2,0)=-0.16604;robot_camera(2,1)= 0.98559;robot_camera(2,2)=-0.032347;robot_camera(2,3)=1.1996;
-    robot_camera(3,0)=0;robot_camera(3,1)=0;robot_camera(3,2)=0;robot_camera(3,3)=1;
+//    robot_camera(1,0)=0.054682;robot_camera(1,1)=-0.02355;robot_camera(1,2)=-0.99823;robot_camera(1,3)=0.52848;
+//    robot_camera(2,0)=-0.16604;robot_camera(2,1)= 0.98559;robot_camera(2,2)=-0.032347;robot_camera(2,3)=1.1996;
+//    robot_camera(3,0)=0;robot_camera(3,1)=0;robot_camera(3,2)=0;robot_camera(3,3)=1;
     //robot_calculate=robot_camera.inverse()*camera_state*endT.inverse();
+/*.................shi di.....................................*/
+    robot_camera(0,0)=0.9846;robot_camera(0,1)=0.16752;robot_camera(0,2)=0.049983;robot_camera(0,3)=0.21312;
+    robot_camera(1,0)=0.054682;robot_camera(1,1)=-0.02555;robot_camera(1,2)=-0.99823;robot_camera(1,3)=0.52848;
+    robot_camera(2,0)=-0.16604;robot_camera(2,1)= 0.98559;robot_camera(2,2)=-0.034347;robot_camera(2,3)=1.2196;
+    robot_camera(3,0)=0;robot_camera(3,1)=0;robot_camera(3,2)=0;robot_camera(3,3)=1;
+        //robot_calculate=robot_camera.inverse()*camera_state*endT.inverse();
     robot_calculate=robot_camera.inverse()*camera_state;
     if(m==0)
     {
@@ -728,23 +826,59 @@ void MainWindow::on_pushButton_3_clicked()
 }
 void MainWindow::on_level_clicked()
 {
-    QVector<double> temp(20);
-    QVector<double> temp1(20);
-    for(int i=0;i<20;i++)
+    QVector<double> temp(40);
+    QVector<double> temp1(40);
+ /*.................第一条曲线.....................................*/
+    for(int i=0;i<40;i++)
     {
         temp[i] = i;
-        temp1[i] =rand()%(45-55)+20;
+        temp1[i] =rand()%(45-48)+20;
     }
     ui->plot->addGraph();  //添加一条曲线
     ui->plot->graph(0)->setPen(QPen(Qt::red));//x是曲线序号，添加的第一条是0，设置曲线颜色
     ui->plot->graph(0)->setData(temp,temp1); //输出各点的图像，x和y都是QVector类
+    ui->plot->graph(0)->setName("体温");
     //其原型如下：
     //void QCPGraph::setData(const QVector<double> &key, const QVector<double> &value)
-    ui->plot->xAxis->setLabel("患者治疗前后30天内血糖含量");   //x轴的文字
+    ui->plot->xAxis->setLabel("患者治疗前后30天内各项指标情况");   //x轴的文字
     ui->plot->yAxis->setLabel("含量值");   //y轴的文字
-    ui->plot->xAxis->setRange(0,20);  //x轴范围
+    ui->plot->xAxis->setRange(0,40);  //x轴范围
     ui->plot->yAxis->setRange(0,50);  //y轴范围
     ui->plot->replot(); //重绘
+  /*.................第二条曲线.....................................*/
+    for(int i=0;i<40;i++)
+    {
+        temp[i] = i;
+        temp1[i] =rand()%(45-48)+10;
+    }
+    ui->plot->addGraph();  //添加一条曲线
+    ui->plot->graph(1)->setName("血糖含量");
+    ui->plot->graph(1)->setPen(QPen(Qt::blue));//x是曲线序号，添加的第一条是0，设置曲线颜色
+    ui->plot->graph(1)->setData(temp,temp1); //输出各点的图像，x和y都是QVector类
+    ui->plot->replot(); //重绘
+  /*.................第三条曲线.....................................*/
+    for(int i=0;i<40;i++)
+    {
+        temp[i] = i;
+        temp1[i] =rand()%(45-48);
+    }
+    ui->plot->addGraph();  //添加一条曲线
+    ui->plot->graph(2)->setName("脑电波强度");
+    ui->plot->graph(2)->setPen(QPen(Qt::black));//x是曲线序号，添加的第一条是0，设置曲线颜色
+    ui->plot->graph(2)->setData(temp,temp1); //输出各点的图像，x和y都是QVector类
+    ui->plot->replot(); //重绘
+    /*.................第四条曲线.....................................*/
+     for(int i=0;i<40;i++)
+      {
+          temp[i] = i;
+          temp1[i] =rand()%(45-48)+30;
+      }
+      ui->plot->addGraph();  //添加一条曲线
+      ui->plot->graph(3)->setName("脑电流量");
+      ui->plot->graph(3)->setPen(QPen(Qt::green));//x是曲线序号，添加的第一条是0，设置曲线颜色
+      ui->plot->graph(3)->setData(temp,temp1); //输出各点的图像，x和y都是QVector类
+      ui->plot->replot(); //重绘
+
 }
 
 
@@ -763,6 +897,7 @@ void MainWindow::on_pushButton_startKinect2_clicked()
     connect_kinect2=grab_kinect2.Initial_KinectV2_driver();
     track_head=false;
     target_last[6]={0};
+
     if(connect_kinect2)
     {
         ui->label_State_Kinect2->setText(tr("Kinect2 连接成功"));
@@ -773,7 +908,7 @@ void MainWindow::on_pushButton_startKinect2_clicked()
 
         Kinect2_Timer=new QTimer(this);
         connect(Kinect2_Timer,SIGNAL(timeout()),this,SLOT(Kinect2_cycle()));
-        Kinect2_Timer->start(30);
+        Kinect2_Timer->start(300);
 
         ui->lineEdit_handeyedata_path->setText(QString("/home/zhang/brain_face_xml/hand_eye_data/111.txt"));
 
@@ -802,37 +937,100 @@ void MainWindow::Kinect2_cycle(void)
 {
     grab_kinect2.Grab_image_KinectV2(rgb_corrected,depth_corrected,rgb_ori,depth_ori);
 
-    trackhead.detect_face(rgb_corrected,depth_corrected);
+    bool detect_face;
 
-    if(track_head)
+    detect_face=trackhead.detect_face(rgb_corrected,depth_corrected);
+
+    if(detect_face)
+        ui->label_State_track->setText(tr("头部跟踪状态：正常"));
+    else
+        ui->label_State_track->setText(tr("头部跟踪失败,请病人停止运动!!!"));
+
+    if(track_head && detect_face )
     {  
         double speed_now=sqrt(q_actual[6]*q_actual[6]+q_actual[7]*q_actual[7]+q_actual[8]*q_actual[8]);
 
         double target[6];
-
-        trackhead.track_head(target);
+        trackhead.track_head(target,2);
+/*.........................   添加力控用的内容(begin)....................................*/
+        double q[6] = {q_actual[0]*3.14 / 180, q_actual[1]*3.14 / 180, q_actual[2]*3.14 / 180, q_actual[3]*3.14 / 180, q_actual[4]*3.14 / 180, q_actual[5]*3.14 / 180 };
+        double T[16];
+        double translate[9];
+        double Fz;
+        forward(q, T);
+        double T02 = -T[0];  double T00 = T[1];  double T01 = T[2];
+        double T12 = -T[4]; double T10 = T[5]; double T11 = T[6];
+        double T22 = T[8]; double T20 = -T[9]; double T21 = -T[10];
+        translate[0]=T00;translate[1]=T01;translate[2]=T02;translate[3]=T10;
+        translate[4]=T11;translate[5]=T12;translate[6]=T20;translate[7]=T21;
+        translate[8]=T22;
+        Map<MatrixXd> dymMat(translate,3,3);//以列存储
+        sensor_measure=force_measure();
 
         if(speed_now<0.01)
-        {
-            if(abs(target[0]-target_last[0])<0.02)
-                   target[0]=target_last[0];
-            if(abs(target[1]-target_last[1])<0.02)
-                   target[1]=target_last[1];
-            if(abs(target[2]-target_last[2])<0.02)
-                   target[2]=target_last[2];
-            if(abs(target[3]-target_last[3])<0.3)
-                   target[3]=target_last[3];
-            if(abs(target[4]-target_last[4])<0.3)
-                   target[4]=target_last[4];
-            if(abs(target[5]-target_last[5])<0.3)
-                   target[5]=target_last[5];
+    {
+            if(move_l==1)
+            {
+                Fz_current=(*(sensor_measure+2))/10;
+            }
+            //qDebug()<<"Fz_current:"<<Fz_current;
+            //bp[0]=20*response.at<float>(0,0);bp[1]=response.at<float>(0,1)*20;bp[2]=response.at<float>(0,2)*20;bp[3]=response.at<float>(0,3)*1.2;bp[4]=response.at<float>(0,4)*1.2;bp[5]=response.at<float>(0,5)*1.2;
+            Fz=(*(sensor_measure+2))/10;
+            Fz=Fz-Fz_current+5;
+            qDebug()<<"Fz_current:"<<Fz_current<<"Fz:"<<Fz;
+            VectorXd Vd(6);//末端坐标系
+            Vector3d v1;
+            Vector3d v11;
+            Vd=compensation(0,0,Fz,0,0,0);
+            v1[0]=0;v1[1]=0;v1[2]=Vd[2];
+            //qDebug()<<"Fz"<<Fz<<"Fz_curren"<<Fz_current<<"Z"<<Vd(2);
+            v11=dymMat.transpose()*v1;
+            qDebug()<<v11[0]<<" "<<v11[1]<<" "<<v11[2];
 
-            strInstruct=movelpos(target[0],target[1],target[2],target[3],target[4],target[5],0.1,0.1);
-            int write_byte=tcpClient->write(strInstruct.toLatin1(),strInstruct.length());
-            qDebug()<<strInstruct<<";"<<write_byte;
+/*.........................   添加力控用的内容(end)....................................*/
 
-            for(int i=0;i<6;i++)
-                target_last[i]=target[i];
+
+            double error[3];
+
+            qDebug()<<"target:"<<target[0]<<" "<<target[1]<<" "<<target[2];
+            qDebug()<<"target_last:"<<target_last[0]<<" "<<target_last[1]<<" "<<target_last[2];
+            error[0]=target[0]-target_last[0];
+            error[1]=target[1]-target_last[1];
+            error[2]=target[2]-target_last[2];
+
+/*......................... 添加力控用的内容(begin)....................................*/
+            if(fabs(error[0])<0.02&&fabs(error[1])<0.02&&fabs(error[2])<0.03)
+            {
+                if(fabs(v11[0])<0.035&&fabs(v11[1])<0.035&&fabs(v11[2])<0.035)
+                {
+                        target[0]=q_actual[12]+v11[0];
+                        target[1]=q_actual[13]+v11[1];
+                        target[2]=q_actual[14]+v11[2];
+                        strInstruct=movelpos(target[0],target[1],target[2],q_actual[15],q_actual[16],q_actual[17],0.1,0.1);
+                        int write_byte=tcpClient->write(strInstruct.toLatin1(),strInstruct.length());//toLatin1(); 将QString转为char
+                        qDebug()<<strInstruct<<";"<<write_byte;
+                        bool ifwritten=tcpClient->waitForBytesWritten();
+                        move_l=0;
+                        for(int i=0;i<6;i++)
+                           target_last[i]=target[i];
+
+                }
+                qDebug()<<error[0]<<" "<<error[1]<<" "<<error[2];
+            }
+/*.........................添加力控用的内容(end)....................................*/
+            else if(fabs(error[0])<0.2&&fabs(error[1])<0.2&&fabs(error[2])<0.2)
+            {
+                strInstruct=movelpos(target[0],target[1],target[2],target[3],target[4],target[5],0.1,0.1);
+                int write_byte=tcpClient->write(strInstruct.toLatin1(),strInstruct.length());
+                qDebug()<<strInstruct<<";"<<write_byte;
+                //move_l=1;
+                for(int i=0;i<6;i++)
+                    target_last[i]=target[i];
+            }
+            else
+            {
+                qDebug()<<" the change is so big";
+            }
         }
 
     }
@@ -868,6 +1066,11 @@ void MainWindow::on_pushButton_get_weizi_clicked()
 {
      fstream hand_eye_position;
      hand_eye_position.open(ui->lineEdit_handeyedata_path->text().toStdString());
+     ifopen=open_sensor();//open sensor
+     if(ifopen)
+         qDebug()<<"force sensor open true";
+     else
+         qDebug()<<"force sensor open false";
      for(int i=0;i<4;i++)
      {
         for(int j=0;j<4;j++)
@@ -879,19 +1082,66 @@ void MainWindow::on_pushButton_get_weizi_clicked()
 
      trackhead.armbase_to_cam= trackhead.cam_to_armbase.inverse();
 
+     Kinect2_Timer->stop();
+
      trackhead.get_end_to_base( q_actual[12],q_actual[13],q_actual[14],q_actual[15],q_actual[16],q_actual[17]);
+
+     target_last[0]=q_actual[12];
+     target_last[1]=q_actual[13];
+     target_last[2]=q_actual[14];
+
+     grab_kinect2.Grab_image_KinectV2(rgb_corrected,depth_corrected,rgb_ori,depth_ori);
 
      bool detected_face=trackhead.detect_face(rgb_corrected,depth_corrected);
 
      if(detected_face)
-     {
-       trackhead.get_illpoint_to_head();
+     {  
+         std::cout<<"1111111"<<std::endl;
+         double differ1[3],differ2[3];
+         trackhead.get_illpoint_to_head(differ1,differ2);
+         ui->lineEdit_target_X->setText(QString::number(differ1[0], 5, 2));
+         ui->lineEdit_target_Y->setText(QString::number(differ1[1], 5, 2));
+         ui->lineEdit_target_Z->setText(QString::number(differ1[2], 5, 2));
+         ui->lineEdit_target_Rx->setText(QString::number(differ2[0], 5, 2));
+         ui->lineEdit_target_Ry->setText(QString::number(differ2[1], 5, 2));
+         ui->lineEdit_target_Rz->setText(QString::number(differ2[2], 5, 2));
      }
 
+     Kinect2_Timer->start();
+
+}
+
+void MainWindow::on_pushButton_start_recons_clicked()
+{
+    kinfu_app.construction_flag=true;
+    kinfu_app.execute();
+}
+void MainWindow::on_pushButton_6_clicked()
+{
+   kinfu_app.take_cloud();
+}
+
+
+void MainWindow::on_pushButton_end_recons_clicked()
+{
+   kinfu_app.construction_flag=false;
 }
 
 
 
+
+
+void MainWindow::on_close_system_clicked()
+{
+    double initial_pose[6];
+    Kinect2_Timer->stop();
+    robot_timer->stop();
+    initial_pose[0]=-0.063;initial_pose[1]=-0.6099;initial_pose[2]=0.47698;initial_pose[3]=2.3474;initial_pose[4]=-2.0927;initial_pose[5]=0.0831;
+    strInstruct=movelpos(initial_pose[0],initial_pose[1],initial_pose[2],initial_pose[3],initial_pose[4],initial_pose[5],0.1,0.1);
+    int write_byte=tcpClient->write(strInstruct.toLatin1(),strInstruct.length());//toLatin1(); 将QString转为char
+    qDebug()<<strInstruct<<";"<<write_byte;
+
+}
 
 
 

@@ -91,7 +91,7 @@ bool Grab_image::initPipeline(const std::string &method )
       #ifdef LIBFREENECT2_WITH_OPENGL_SUPPORT
       pipeline = new libfreenect2::OpenGLPacketPipeline();
       #else
-     std::cout<<"OpenGL depth processing is not available!"<<std::endl;
+      std::cout<<"OpenGL depth processing is not available!"<<std::endl;
       return false;
       #endif
     }

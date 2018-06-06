@@ -10,6 +10,9 @@
 #include"facerecognition.h"
 void facebegin();
 int recognized();
+
+extern cv::Mat Kinect2_image;
+
 //#include"dataprocess.h"
 #endif // FACEMAIN
 

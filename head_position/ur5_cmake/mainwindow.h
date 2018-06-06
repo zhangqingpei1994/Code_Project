@@ -20,6 +20,8 @@
 
 #include"kinect2_grab/grab_kinect2.h"
 #include"head_track/track_head.h"
+#include"Reconstruct_3d/reconstruct_3d.h"
+
 
 
 namespace Ui
@@ -35,6 +37,8 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     CvANN_MLP ann;
+
+
 
 private slots:
 
@@ -70,6 +74,17 @@ private slots:
     void on_pushButton_Start_Trackhead_clicked();
 
     void on_pushButton_stopKinect2_clicked();
+    void readKinect2_Frame();
+
+    void on_close_system_clicked();
+
+
+
+    void on_pushButton_start_recons_clicked();
+
+    void on_pushButton_end_recons_clicked();
+
+    void on_pushButton_6_clicked();
 
 signals:
    void tcp2(int);
@@ -93,7 +108,9 @@ private:
 
 
     QTimer *Kinect2_Timer;
+    QTimer *Kinect2_FaceRecog;
     Grab_image grab_kinect2;
+    KinFuApp kinfu_app;
     cv::Mat rgb_corrected,depth_corrected,rgb_ori,depth_ori;
     bool track_head;
     bool connect_kinect2;
